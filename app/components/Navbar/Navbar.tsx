@@ -5,8 +5,8 @@ import { usePathname, useRouter } from "next/navigation";
 import { ShoppingBag, Menu, X, Heart, User } from "lucide-react";
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { useCart } from "../../context/CartContext";
-import { useWishlist } from "../../context/WishlistContext";
+import { useCart } from "../../store/cartStore";
+import { useWishlist } from "../../store/wishlistStore";
 
 export function Navbar() {
   const pathname = usePathname();

@@ -23,10 +23,10 @@ export default WhatsAppIcon;
 export function Footer() {
   // Static collections — API disabled, running as frontend only
   const [collections] = useState([
-    { id: 1, name: "Women", slug: "women" },
-    { id: 2, name: "Men", slug: "men" },
-    { id: 3, name: "Unisex", slug: "unisex" },
-    { id: 4, name: "Gift Sets", slug: "gift-sets" },
+    { id: 1, name: "Women" },
+    { id: 2, name: "Men" },
+    { id: 3, name: "Unisex" },
+    { id: 4, name: "Gift Sets" },
   ]);
 
   const scrollToTop = () => {
@@ -137,7 +137,7 @@ export function Footer() {
                   collections.map((collection) => (
                     <li key={collection.id}>
                       <Link
-                        href={`/shop?category=${collection.slug}`}
+                        href={`/shop?category=${encodeURIComponent(String(collection.id))}`}
                         onClick={scrollToTop}
                         className="group flex items-center cursor-pointer hover:text-purple-700 transition-colors"
                       >

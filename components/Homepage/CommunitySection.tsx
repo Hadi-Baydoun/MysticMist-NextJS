@@ -47,7 +47,7 @@ function FadeInSection({ children, delay = 0 }: FadeInSectionProps) {
   );
 }
 
-export function CommunityClient({ posts }: { posts: InstagramPost[] }) {
+export function CommunitySection({ posts }: { posts: InstagramPost[] }) {
   return (
     <>
       <FadeInSection>

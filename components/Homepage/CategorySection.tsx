@@ -14,7 +14,7 @@ interface SparkleConfig {
   duration: number;
 }
 
-export function CategorySectionClient({
+export function CategorySection({
   collections,
 }: {
   collections: ShopCategoryTile[];

@@ -1,26 +1,8 @@
 import { Suspense } from "react";
 
+import { HomeSectionFallback } from "@/components/Homepage/HomeSectionFallback";
 import { TestimonialsCarousel } from "@/components/Homepage/TestimonialsCarousel";
 import { fetchTestimonials } from "@/lib/testimonials-data";
-
-function TestimonialsSectionSkeleton() {
-  return (
-    <section className="py-32 px-4 sm:px-6 relative lg:px-[10rem] bg-white">
-      <div className="max-w-7xl mx-auto">
-        <div className="text-center py-12">
-          <p
-            style={{
-              fontFamily: "var(--font-heading)",
-            }}
-            className="text-gray-500"
-          >
-            Loading testimonials...
-          </p>
-        </div>
-      </div>
-    </section>
-  );
-}
 
 async function TestimonialsContent() {
   const result = await fetchTestimonials();
@@ -41,7 +23,9 @@ async function TestimonialsContent() {
 
 export default function TestimonialsSlot() {
   return (
-    <Suspense fallback={<TestimonialsSectionSkeleton />}>
+    <Suspense
+      fallback={<HomeSectionFallback />}
+    >
       <TestimonialsContent />
     </Suspense>
   );

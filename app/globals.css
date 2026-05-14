@@ -1,1 +1,10 @@
 @import "tailwindcss";
+
+/* Mystic Mist — shared tokens for UI primitives and skeletons */
+:root {
+  --mystic-purple: #a156b4;
+  --mystic-lavender: #e5c6ed;
+  --mystic-purple-soft: rgba(161, 86, 180, 0.08);
+  --mystic-lavender-mid: rgba(229, 198, 237, 0.55);
+  --mystic-card-shadow: 0 14px 44px -18px rgba(161, 86, 180, 0.35);
+}

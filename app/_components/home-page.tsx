@@ -1,21 +1,29 @@
 "use client";
 
+import type { ReactNode } from "react";
+
 import { Hero } from "@/app/components/Homepage/Hero";
 import { Statistics } from "@/app/components/Homepage/Statistics";
-import { Category } from "@/app/components/Homepage/Category";
-import { Products } from "@/app/components/Homepage/Products";
-import { Testimonials } from "@/app/components/Homepage/Testimonials";
-import { Community } from "@/app/components/Homepage/Community";
 
-export function HomePage() {
+export function HomePage({
+  category,
+  favorites,
+  testimonials,
+  community,
+}: {
+  category: ReactNode;
+  favorites: ReactNode;
+  testimonials: ReactNode;
+  community: ReactNode;
+}) {
   return (
     <>
       <Hero />
       <Statistics />
-      <Category />
-      <Products />
-      <Testimonials />
-      <Community />
+      {category}
+      {favorites}
+      {testimonials}
+      {community}
     </>
   );
 }

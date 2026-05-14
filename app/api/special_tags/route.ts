@@ -1,10 +1,9 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 
-type InstagramPostRow = {
+type SpecialTagRow = {
   id?: string;
-  link?: string;
-  image?: string;
+  name?: string;
 };
 
 export async function GET() {
@@ -19,25 +18,20 @@ export async function GET() {
   }
 
   const supabase = createClient(url, key);
-  const { data, error } = await supabase
-    .from("instagram_posts")
-    .select("*")
-    .order("created_at", { ascending: false })
-    .limit(6);
+  const { data, error } = await supabase.from("special_tags").select("*");
 
   if (error) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 
-  const rows = (data ?? []) as InstagramPostRow[];
+  const rows = (data ?? []) as SpecialTagRow[];
 
-  const instagram_posts = rows.map((row) => {
+  const special_tags = rows.map((row) => {
     return {
       id: row.id,
-      link: row.link,
-      image: row.image,
+      name: row.name,
     };
   });
 
-  return NextResponse.json({ instagram_posts });
+  return NextResponse.json({ special_tags });
 }

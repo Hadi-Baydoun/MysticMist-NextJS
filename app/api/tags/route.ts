@@ -1,13 +1,9 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 
-type TestimonialRow = {
+type TagRow = {
   id?: string;
   name?: string;
-  location?: string;
-  rating?: number;
-  text?: string;
-  avatar_url?: string;
 };
 
 export async function GET() {
@@ -22,24 +18,20 @@ export async function GET() {
   }
 
   const supabase = createClient(url, key);
-  const { data, error } = await supabase.from("testimonials").select("*");
+  const { data, error } = await supabase.from("tags").select("*");
 
   if (error) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 
-  const rows = (data ?? []) as TestimonialRow[];
+  const rows = (data ?? []) as TagRow[];
 
-  const testimonials = rows.map((row) => {
+  const tags = rows.map((row) => {
     return {
-      id: row.id ?? row.name,
+      id: row.id,
       name: row.name,
-      location: row.location,
-      rating: row.rating,
-      text: row.text,
-      avatar_url: row.avatar_url,
     };
   });
 
-  return NextResponse.json({ testimonials });
+  return NextResponse.json({ tags });
 }

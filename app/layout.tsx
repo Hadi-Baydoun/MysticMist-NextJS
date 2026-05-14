@@ -1,9 +1,10 @@
-"use client";
-
+import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+
+import { Navbar } from "@/components/Navbar/Navbar";
+import { Footer } from "@/components/Footer/Footer";
+
 import "./globals.css";
-import { Navbar } from "../app/components/Navbar/Navbar";
-import { Footer } from "../app/components/Footer/Footer";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -14,6 +15,21 @@ const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
   subsets: ["latin"],
 });
+
+export const metadata: Metadata = {
+  title: {
+    default: "Mystic Mist",
+    template: "%s · Mystic Mist",
+  },
+  description:
+    "Discover luxurious body mists and fragrances—crafted to awaken your senses.",
+  openGraph: {
+    title: "Mystic Mist",
+    description:
+      "Discover luxurious body mists and fragrances—crafted to awaken your senses.",
+    type: "website",
+  },
+};
 
 export default function RootLayout({
   children,

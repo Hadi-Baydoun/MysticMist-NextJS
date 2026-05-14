@@ -1,12 +1,15 @@
-"use client";
-
-import Link from "next/link";
-import { useState, SVGProps } from "react";
+import type { SVGProps } from "react";
 import { Mail, Phone, MapPin, Sparkles } from "lucide-react";
-// API disabled — running as frontend only
-// import { getCategories } from "@/utils/api";
 
-// Custom WhatsApp Icon Component
+import { ScrollToTopLink } from "@/components/ScrollToTopLink";
+
+const FOOTER_COLLECTIONS = [
+  { id: 1, name: "Women" },
+  { id: 2, name: "Men" },
+  { id: 3, name: "Unisex" },
+  { id: 4, name: "Gift Sets" },
+] as const;
+
 const WhatsAppIcon = (props: SVGProps<SVGSVGElement>) => (
   <svg
     viewBox="0 0 24 24"
@@ -18,44 +21,7 @@ const WhatsAppIcon = (props: SVGProps<SVGSVGElement>) => (
   </svg>
 );
 
-export default WhatsAppIcon;
-
 export function Footer() {
-  // Static collections — API disabled, running as frontend only
-  const [collections] = useState([
-    { id: 1, name: "Women" },
-    { id: 2, name: "Men" },
-    { id: 3, name: "Unisex" },
-    { id: 4, name: "Gift Sets" },
-  ]);
-
-  const scrollToTop = () => {
-    window.scrollTo({ top: 0, behavior: "smooth" });
-  };
-
-  // Fetch categories from Strapi (disabled)
-  // useEffect(() => {
-  //   const loadData = async () => {
-  //     try {
-  //       const categories = await getCategories();
-  //
-  //       const mappedCollections = categories.slice(0, 4).map((category) => {
-  //         return {
-  //           id: category.id,
-  //           name: category.attributes?.name || category.name || "",
-  //           slug: category.attributes?.slug || category.slug || "",
-  //         };
-  //       });
-  //
-  //       setCollections(mappedCollections);
-  //     } catch (error) {
-  //       console.error("Error loading categories from Strapi:", error);
-  //     }
-  //   };
-  //
-  //   loadData();
-  // }, []);
-
   return (
     <footer className="relative bg-gradient-to-b from-purple-50/50 via-purple-100/30 to-white border-t border-purple-200/50 overflow-hidden lg:pl-[9rem] lg:pr-[7rem]">
       {/* Decorative Elements */}
@@ -71,9 +37,8 @@ export function Footer() {
           {/* Brand Section */}
           <div className="col-span-2 sm:col-span-2 lg:col-span-5">
             <div>
-              <Link
+              <ScrollToTopLink
                 href="/"
-                onClick={scrollToTop}
                 className="inline-block mb-4 sm:mb-6 group"
               >
                 <img
@@ -81,7 +46,7 @@ export function Footer() {
                   alt="MysticMist"
                   className="h-16 sm:h-20 w-auto object-contain"
                 />
-              </Link>
+              </ScrollToTopLink>
 
               <p
                 style={{ fontFamily: "var(--font-body)" }}
@@ -93,7 +58,7 @@ export function Footer() {
             </div>
           </div>
 
-          {/* Quick Links */}
+          {/* Quick links */}
           <div className="col-span-1 sm:col-span-1 lg:col-span-2">
             <div>
               <h4
@@ -109,14 +74,13 @@ export function Footer() {
                   { href: "/shop", label: "Shop" },
                 ].map((link) => (
                   <li key={link.href}>
-                    <Link
+                    <ScrollToTopLink
                       href={link.href}
-                      onClick={scrollToTop}
                       className="text-gray-600 hover:text-purple-700 transition-colors text-base font-body group flex items-center"
                     >
                       <span className="w-0 h-px bg-purple-400 group-hover:w-4 transition-all mr-0 group-hover:mr-2" />
                       {link.label}
-                    </Link>
+                    </ScrollToTopLink>
                   </li>
                 ))}
               </ul>
@@ -133,27 +97,17 @@ export function Footer() {
                 Collections
               </h4>
               <ul className="space-y-2 sm:space-y-3 text-gray-600 text-sm sm:text-base font-body">
-                {collections.length > 0 ? (
-                  collections.map((collection) => (
-                    <li key={collection.id}>
-                      <Link
-                        href={`/shop?category=${encodeURIComponent(String(collection.id))}`}
-                        onClick={scrollToTop}
-                        className="group flex items-center cursor-pointer hover:text-purple-700 transition-colors"
-                      >
-                        <span className="w-0 h-px bg-purple-400 group-hover:w-4 transition-all mr-0 group-hover:mr-2" />
-                        {collection.name}
-                      </Link>
-                    </li>
-                  ))
-                ) : (
-                  <li>
-                    <span className="group flex items-center cursor-pointer hover:text-purple-700 transition-colors">
+                {FOOTER_COLLECTIONS.map((collection) => (
+                  <li key={collection.id}>
+                    <ScrollToTopLink
+                      href={`/shop?category=${encodeURIComponent(String(collection.id))}`}
+                      className="group flex items-center cursor-pointer hover:text-purple-700 transition-colors"
+                    >
                       <span className="w-0 h-px bg-purple-400 group-hover:w-4 transition-all mr-0 group-hover:mr-2" />
-                      Loading...
-                    </span>
+                      {collection.name}
+                    </ScrollToTopLink>
                   </li>
-                )}
+                ))}
               </ul>
             </div>
           </div>
@@ -187,7 +141,7 @@ export function Footer() {
                 </li>
               </ul>
 
-              {/* Social Links */}
+              {/* Social links */}
               <div className="mt-4 sm:mt-6 flex space-x-3">
                 {[
                   //   {

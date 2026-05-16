@@ -1,3 +1,6 @@
+import { cache } from "react";
+import { unstable_cache } from "next/cache";
+
 import { createClient } from "@supabase/supabase-js";
 
 type CategoryEmbed = {
@@ -71,8 +74,19 @@ export type ShopCatalogProduct = {
   createdAt?: string;
 };
 
+/** Full product for `/product/[id]` (gallery, description, stock). */
+export type ShopProductDetail = ShopCatalogProduct & {
+  description: string | null;
+  stock: number;
+  images: string[];
+};
+
 export type FetchProductsResult =
   | { ok: true; products: ProductListPayload[] }
+  | { ok: false; error: string };
+
+export type FetchProductByIdResult =
+  | { ok: true; product: ProductListPayload }
   | { ok: false; error: string };
 
 function asSingle<T>(embed: T | T[] | null | undefined): T | null {
@@ -126,6 +140,32 @@ function primaryProductImage(images: unknown): string {
   return IMAGE_FALLBACK;
 }
 
+function collectProductImages(images: unknown): string[] {
+  const urls: string[] = [];
+  if (Array.isArray(images)) {
+    for (const item of images) {
+      if (typeof item === "string" && item.trim()) {
+        urls.push(item.trim());
+        continue;
+      }
+      if (item && typeof item === "object" && "url" in item) {
+        const u = (item as { url?: unknown }).url;
+        if (typeof u === "string" && u.trim()) urls.push(u.trim());
+      }
+    }
+  } else if (typeof images === "string" && images.trim()) {
+    urls.push(images.trim());
+  }
+  return [...new Set(urls)];
+}
+
+/** Parse dynamic route param for Supabase `products.id` (numeric or UUID string). */
+export function parseProductRouteId(raw: string): string | number {
+  const trimmed = raw.trim();
+  if (/^\d+$/.test(trimmed)) return parseInt(trimmed, 10);
+  return trimmed;
+}
+
 function rowToPayload(row: ProductRow): ProductListPayload {
   const {
     category: categoryEmbed,
@@ -144,8 +184,7 @@ function rowToPayload(row: ProductRow): ProductListPayload {
   };
 }
 
-/** Server-side product list for shop (same query as former route handler). */
-export async function fetchProducts(): Promise<FetchProductsResult> {
+async function fetchProductsUncached(): Promise<FetchProductsResult> {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const key = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
 
@@ -180,7 +219,82 @@ export async function fetchProducts(): Promise<FetchProductsResult> {
   return { ok: true, products };
 }
 
-export function productPayloadToShopProduct(p: ProductListPayload): ShopCatalogProduct {
+/** Server-side product list for shop; cached briefly to speed repeat navigations. */
+export async function fetchProducts(): Promise<FetchProductsResult> {
+  return unstable_cache(
+    fetchProductsUncached,
+    ["catalog-products"],
+    { revalidate: 60 },
+  )();
+}
+
+async function fetchProductByIdUncached(
+  parsedId: string | number,
+): Promise<FetchProductByIdResult> {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const key = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
+
+  if (!url || !key) {
+    return { ok: false, error: "Missing Supabase configuration" };
+  }
+
+  const supabase = createClient(url, key);
+
+  let { data, error } = await supabase
+    .from("products")
+    .select(PRODUCTS_SELECT)
+    .eq("id", parsedId)
+    .maybeSingle();
+
+  if (error) {
+    const altSelect = `
+      *,
+      category ( id, title ),
+      special_tag:special_tags ( id, name ),
+      product_tags (
+        tag_id,
+        tags ( id, name )
+      )
+    `;
+    const second = await supabase
+      .from("products")
+      .select(altSelect)
+      .eq("id", parsedId)
+      .maybeSingle();
+    data = second.data;
+    error = second.error;
+  }
+
+  if (error) {
+    return { ok: false, error: error.message };
+  }
+
+  if (data == null) {
+    return { ok: false, error: "Not found" };
+  }
+
+  const row = data as ProductRow;
+  return { ok: true, product: rowToPayload(row) };
+}
+
+/**
+ * PDP data: React `cache` merges `generateMetadata` + page into one fetch per navigation;
+ * `unstable_cache` keeps warm results for revisits (~2 min).
+ */
+export const fetchProductById = cache(async function fetchProductById(
+  rawId: string,
+): Promise<FetchProductByIdResult> {
+  const parsedId = parseProductRouteId(rawId.trim());
+  return unstable_cache(
+    () => fetchProductByIdUncached(parsedId),
+    ["product-by-id", String(parsedId)],
+    { revalidate: 120 },
+  )();
+});
+
+export function productPayloadToShopProduct(
+  p: ProductListPayload,
+): ShopCatalogProduct {
   const tagNames: string[] = [];
   if (typeof p.special_tag_name === "string" && p.special_tag_name.trim()) {
     tagNames.push(p.special_tag_name.trim());
@@ -195,12 +309,9 @@ export function productPayloadToShopProduct(p: ProductListPayload): ShopCatalogP
 
   const price = typeof p.price === "number" ? p.price : 0;
   const after = p.price_after_sale;
-  const hasPriceAfterSale =
-    after != null && typeof after === "number";
+  const hasPriceAfterSale = after != null && typeof after === "number";
   const salePrice =
-    hasPriceAfterSale &&
-    typeof p.price === "number" &&
-    after < p.price
+    hasPriceAfterSale && typeof p.price === "number" && after < p.price
       ? after
       : undefined;
 
@@ -215,5 +326,24 @@ export function productPayloadToShopProduct(p: ProductListPayload): ShopCatalogP
     specialTags: [...new Set(tagNames)],
     image: primaryProductImage(p.images),
     createdAt: typeof p.created_at === "string" ? p.created_at : undefined,
+  };
+}
+
+export function productPayloadToDetail(
+  p: ProductListPayload,
+): ShopProductDetail {
+  const base = productPayloadToShopProduct(p);
+  const gallery = collectProductImages(p.images);
+  const images = gallery.length > 0 ? gallery : [base.image || IMAGE_FALLBACK];
+  const stock = typeof p.stock === "number" ? p.stock : 0;
+  return {
+    ...base,
+    image: base.image || (images[0] ?? IMAGE_FALLBACK),
+    description:
+      typeof p.description === "string" && p.description.trim()
+        ? p.description
+        : null,
+    stock,
+    images,
   };
 }

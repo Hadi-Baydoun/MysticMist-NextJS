@@ -1,3 +1,5 @@
+import { unstable_cache } from "next/cache";
+
 import { createClient } from "@supabase/supabase-js";
 
 type CategoryRow = {
@@ -53,8 +55,7 @@ function rowToTile(row: CategoryRow): ShopCategoryTile {
   };
 }
 
-/** Server-side load for `category` table (homepage collections). */
-export async function fetchCategories(): Promise<FetchCategoriesResult> {
+async function fetchCategoriesUncached(): Promise<FetchCategoriesResult> {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const key = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
 
@@ -73,4 +74,13 @@ export async function fetchCategories(): Promise<FetchCategoriesResult> {
   const categories = rows.map(rowToTile);
 
   return { ok: true, categories };
+}
+
+/** Server-side load for `category` table (homepage + shop filters); cached briefly. */
+export async function fetchCategories(): Promise<FetchCategoriesResult> {
+  return unstable_cache(
+    fetchCategoriesUncached,
+    ["category-tiles"],
+    { revalidate: 120 },
+  )();
 }

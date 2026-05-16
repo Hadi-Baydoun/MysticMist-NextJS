@@ -1,8 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
-import { ShoppingBag, Menu, X, Heart, User } from "lucide-react";
+import { usePathname } from "next/navigation";
+import { ShoppingBag, Menu, X, Heart } from "lucide-react";
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useCart } from "@/lib/stores/cartStore";
@@ -10,7 +10,6 @@ import { useWishlist } from "@/lib/stores/wishlistStore";
 
 export function Navbar() {
   const pathname = usePathname();
-  const router = useRouter();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const { cartCount } = useCart();
@@ -137,46 +136,59 @@ export function Navbar() {
           {/* Right Side Icons */}
           <div className="flex items-center space-x-4">
             {/* Wishlist */}
-            <Link href="/wishlist" onClick={scrollToTop}>
-              <motion.button
+            <Link
+              href="/wishlist"
+              onClick={scrollToTop}
+              className="hidden md:block relative p-2 text-purple-700 hover:text-purple-900 transition-colors group rounded-lg"
+              aria-label={`Wishlist${wishlistCount > 0 ? `, ${wishlistCount} items` : ""}`}
+            >
+              <motion.span
                 whileHover={{ scale: 1.1, rotate: 5 }}
                 whileTap={{ scale: 0.95 }}
-                className="hidden md:block relative p-2 text-purple-700 hover:text-purple-900 transition-colors group"
+                className="relative inline-flex"
               >
                 <Heart className="w-6 h-6" />
-                <motion.span
-                  className="absolute -top-1 -right-1 bg-gradient-to-r from-pink-500 to-purple-500 text-white text-xs w-5 h-5 rounded-full flex items-center justify-center"
-                  initial={{ scale: 0 }}
-                  animate={{ scale: 1 }}
-                  key={wishlistCount}
-                  transition={{ type: "spring", stiffness: 500, damping: 15 }}
-                >
-                  {wishlistCount}
-                </motion.span>
-                <span className="absolute inset-0 bg-purple-100 rounded-full opacity-0 group-hover:opacity-100 transition-opacity -z-10 blur" />
-              </motion.button>
+                {wishlistCount > 0 ? (
+                  <motion.span
+                    className="absolute -top-1 -right-1 bg-gradient-to-r from-pink-500 to-purple-500 text-white text-xs min-w-5 h-5 px-1 rounded-full flex items-center justify-center"
+                    initial={{ scale: 0 }}
+                    animate={{ scale: 1 }}
+                    key={wishlistCount}
+                    transition={{ type: "spring", stiffness: 500, damping: 15 }}
+                  >
+                    {wishlistCount}
+                  </motion.span>
+                ) : null}
+              </motion.span>
+              <span className="absolute inset-0 bg-purple-100 rounded-full opacity-0 group-hover:opacity-100 transition-opacity -z-10 blur pointer-events-none" />
             </Link>
 
             {/* Cart */}
-            <Link href="/cart" onClick={scrollToTop}>
-              <motion.button
+            <Link
+              href="/cart"
+              onClick={scrollToTop}
+              className="relative p-2 text-purple-700 hover:text-purple-900 transition-colors group rounded-lg"
+              aria-label={`Shopping cart${cartCount > 0 ? `, ${cartCount} items` : ""}`}
+            >
+              <motion.span
                 whileHover={{ scale: 1.1 }}
                 whileTap={{ scale: 0.95 }}
-                className="relative p-2 text-purple-700 hover:text-purple-900 transition-colors group"
+                className="relative inline-flex"
               >
                 <ShoppingBag className="w-6 h-6" />
-                <motion.span
-                  className="absolute -top-1 -right-1 bg-gradient-to-r from-[#E5C6ED] to-[#a156b4] text-white text-xs w-5 h-5 rounded-full flex items-center justify-center shadow-lg"
-                  initial={{ scale: 0 }}
-                  animate={{ scale: 1 }}
-                  key={cartCount}
-                  whileHover={{ scale: 1.1 }}
-                  transition={{ type: "spring", stiffness: 500, damping: 15 }}
-                >
-                  {cartCount}
-                </motion.span>
-                <span className="absolute inset-0 bg-purple-100 rounded-full opacity-0 group-hover:opacity-100 transition-opacity -z-10 blur" />
-              </motion.button>
+                {cartCount > 0 ? (
+                  <motion.span
+                    className="absolute -top-1 -right-1 bg-gradient-to-r from-[#E5C6ED] to-[#a156b4] text-white text-xs min-w-5 h-5 px-1 rounded-full flex items-center justify-center shadow-lg"
+                    initial={{ scale: 0 }}
+                    animate={{ scale: 1 }}
+                    key={cartCount}
+                    transition={{ type: "spring", stiffness: 500, damping: 15 }}
+                  >
+                    {cartCount}
+                  </motion.span>
+                ) : null}
+              </motion.span>
+              <span className="absolute inset-0 bg-purple-100 rounded-full opacity-0 group-hover:opacity-100 transition-opacity -z-10 blur pointer-events-none" />
             </Link>
 
             {/* Mobile Menu Button */}
@@ -234,24 +246,42 @@ export function Navbar() {
               {/* Mobile Actions */}
               <div className="pt-4 border-t border-purple-100 space-y-2">
                 <Link
+                  href="/cart"
+                  onClick={() => {
+                    setMobileMenuOpen(false);
+                    scrollToTop();
+                  }}
+                  style={{ fontFamily: "var(--font-heading)" }}
+                  className="w-full flex items-center space-x-3 py-3 px-6 rounded-xl text-gray-700 hover:bg-purple-50 transition-colors font-body"
+                >
+                  <ShoppingBag className="w-5 h-5" />
+                  <span>
+                    Cart
+                    {cartCount > 0 ? (
+                      <span className="text-[#a156b4] ml-1">
+                        ({cartCount})
+                      </span>
+                    ) : null}
+                  </span>
+                </Link>
+                <Link
                   href="/wishlist"
                   onClick={() => {
                     setMobileMenuOpen(false);
                     scrollToTop();
                   }}
+                  style={{ fontFamily: "var(--font-heading)" }}
+                  className="w-full flex items-center space-x-3 py-3 px-6 rounded-xl text-gray-700 hover:bg-purple-50 transition-colors font-body"
                 >
-                  <motion.button
-                    initial={{ opacity: 0, x: -20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: 0.5 }}
-                    style={{ fontFamily: "var(--font-heading)" }}
-                    className="w-full flex items-center space-x-3 py-3 px-6 rounded-xl text-gray-700 hover:bg-purple-50 transition-colors font-body"
-                  >
-                    <Heart className="w-5 h-5" />
-                    <span style={{ fontFamily: "var(--font-heading)" }}>
-                      Wishlist ({wishlistCount})
-                    </span>
-                  </motion.button>
+                  <Heart className="w-5 h-5" />
+                  <span>
+                    Wishlist
+                    {wishlistCount > 0 ? (
+                      <span className="text-[#a156b4] ml-1">
+                        ({wishlistCount})
+                      </span>
+                    ) : null}
+                  </span>
                 </Link>
               </div>
             </nav>

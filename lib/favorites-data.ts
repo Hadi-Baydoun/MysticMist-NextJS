@@ -1,3 +1,5 @@
+import { unstable_cache } from "next/cache";
+
 import { createClient } from "@supabase/supabase-js";
 
 // ─── Types
@@ -112,8 +114,7 @@ export function favoriteProductToCarousel(
   };
 }
 
-/** Server-only: load favorites from DB. */
-export async function fetchFavoriteProducts(): Promise<FetchFavoriteProductsResult> {
+async function fetchFavoriteProductsUncached(): Promise<FetchFavoriteProductsResult> {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const key = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
 
@@ -134,4 +135,13 @@ export async function fetchFavoriteProducts(): Promise<FetchFavoriteProductsResu
 
   const products = (data as FavoriteProductRow[]).map(favoriteRowToProduct);
   return { ok: true, products };
+}
+
+/** Server-only: load favorites from DB (cached briefly for repeat home visits). */
+export async function fetchFavoriteProducts(): Promise<FetchFavoriteProductsResult> {
+  return unstable_cache(
+    fetchFavoriteProductsUncached,
+    ["homepage-favorites"],
+    { revalidate: 120 },
+  )();
 }

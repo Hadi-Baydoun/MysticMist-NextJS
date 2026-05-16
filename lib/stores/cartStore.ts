@@ -1,6 +1,14 @@
 import { create } from "zustand";
 import { useShallow } from "zustand/react/shallow";
 
+import {
+  addToGuestCartAction,
+  clearGuestCartAction,
+  loadGuestCartAction,
+  removeGuestCartLineAction,
+  updateGuestCartQuantityAction,
+} from "@/app/actions/guest-data";
+
 export interface CartItem {
   id: string | number;
   price: number;
@@ -8,6 +16,9 @@ export interface CartItem {
   quantity: number;
   [key: string]: any;
 }
+
+/** Payload for add-to-cart (quantity is passed separately). */
+export type CartProductInput = Omit<CartItem, "quantity">;
 
 function computeCartTotal(cart: CartItem[]): number {
   return cart.reduce((total, item) => {
@@ -21,9 +32,29 @@ function computeCartCount(cart: CartItem[]): number {
   return cart.reduce((count, item) => count + item.quantity, 0);
 }
 
+/** Merge an added line into cart lines (pure). */
+export function mergeCartLines(
+  cart: CartItem[],
+  product: CartProductInput,
+  quantity: number,
+): CartItem[] {
+  const index = cart.findIndex((item) => item.id === product.id);
+  if (index >= 0) {
+    const next = [...cart];
+    next[index] = {
+      ...next[index],
+      quantity: next[index].quantity + quantity,
+    };
+    return next;
+  }
+  return [...cart, { ...product, quantity } as CartItem];
+}
+
 type CartStore = {
   cart: CartItem[];
-  addToCart: (product: CartItem, quantity?: number) => void;
+  rehydrateFromServer: () => Promise<void>;
+  setCart: (cart: CartItem[]) => void;
+  addToCart: (product: CartProductInput, quantity?: number) => void;
   removeFromCart: (productId: CartItem["id"]) => void;
   updateQuantity: (productId: CartItem["id"], newQuantity: number) => void;
   clearCart: () => void;
@@ -32,40 +63,82 @@ type CartStore = {
 export const useCartStore = create<CartStore>((set, get) => ({
   cart: [],
 
-  addToCart: (product, quantity = 1) => {
-    const prev = [...get().cart];
-    const index = prev.findIndex((item) => item.id === product.id);
-
-    let newCart: CartItem[];
-
-    if (index >= 0) {
-      newCart = [...prev];
-      newCart[index] = {
-        ...newCart[index],
-        quantity: newCart[index].quantity + quantity,
-      };
-    } else {
-      newCart = [...prev, { ...product, quantity }];
+  rehydrateFromServer: async () => {
+    try {
+      const result = await loadGuestCartAction();
+      if (result.ok) set({ cart: result.items });
+    } catch {
+      /* ignore */
     }
+  },
 
-    set({ cart: newCart });
+  setCart: (cart) => set({ cart }),
+
+  addToCart: (product, quantity = 1) => {
+    const prev = get().cart;
+    const nextCart = mergeCartLines(prev, product, quantity);
+    set({ cart: nextCart });
+
+    void (async () => {
+      try {
+        const result = await addToGuestCartAction(product.id, quantity);
+        if (!result.ok) set({ cart: prev });
+      } catch {
+        set({ cart: prev });
+      }
+    })();
   },
 
   removeFromCart: (productId) => {
-    set({ cart: get().cart.filter((item) => item.id !== productId) });
+    const prev = get().cart;
+    set({ cart: prev.filter((item) => item.id !== productId) });
+
+    void (async () => {
+      try {
+        const result = await removeGuestCartLineAction(productId);
+        if (!result.ok) set({ cart: prev });
+      } catch {
+        set({ cart: prev });
+      }
+    })();
   },
 
   updateQuantity: (productId, newQuantity) => {
     if (newQuantity < 1) return;
 
+    const prev = get().cart;
     set({
-      cart: get().cart.map((item) =>
+      cart: prev.map((item) =>
         item.id === productId ? { ...item, quantity: newQuantity } : item,
       ),
     });
+
+    void (async () => {
+      try {
+        const result = await updateGuestCartQuantityAction(
+          productId,
+          newQuantity,
+        );
+        if (!result.ok) set({ cart: prev });
+      } catch {
+        set({ cart: prev });
+      }
+    })();
   },
 
-  clearCart: () => set({ cart: [] }),
+  clearCart: () => {
+    const prev = get().cart;
+    set({ cart: [] });
+
+    void (async () => {
+      try {
+        const result = await clearGuestCartAction();
+        if (!result.ok) set({ cart: prev });
+      } catch {
+        set({ cart: prev });
+      }
+    })();
+  },
 }));
 
 export type CartContextValue = {

@@ -1,8 +1,14 @@
 import { create } from "zustand";
 import { useShallow } from "zustand/react/shallow";
 
-import type { CartItem } from "./cartStore";
-import { useCartStore } from "./cartStore";
+import {
+  addGuestWishlistAction,
+  loadGuestWishlistAction,
+  moveGuestWishlistToCartAction,
+  removeGuestWishlistAction,
+} from "@/app/actions/guest-data";
+
+import { mergeCartLines, type CartProductInput, useCartStore } from "./cartStore";
 
 export interface WishlistItem {
   id: string | number;
@@ -13,6 +19,7 @@ export interface WishlistItem {
 
 type WishlistStore = {
   wishlist: WishlistItem[];
+  rehydrateFromServer: () => Promise<void>;
   addToWishlist: (product: WishlistItem) => void;
   removeFromWishlist: (productId: WishlistItem["id"]) => void;
   isInWishlist: (productId: WishlistItem["id"]) => boolean;
@@ -22,29 +29,78 @@ type WishlistStore = {
 export const useWishlistStore = create<WishlistStore>((set, get) => ({
   wishlist: [],
 
+  rehydrateFromServer: async () => {
+    try {
+      const result = await loadGuestWishlistAction();
+      if (result.ok) set({ wishlist: result.items });
+    } catch {
+      /* ignore */
+    }
+  },
+
   addToWishlist: (product) => {
-    set((state) => {
-      if (state.wishlist.some((item) => item.id === product.id)) {
-        return state;
+    const prev = get().wishlist;
+    if (prev.some((item) => item.id === product.id)) {
+      return;
+    }
+    set({ wishlist: [...prev, product] });
+
+    void (async () => {
+      try {
+        const result = await addGuestWishlistAction(product.id);
+        if (!result.ok) set({ wishlist: prev });
+      } catch {
+        set({ wishlist: prev });
       }
-      return { wishlist: [...state.wishlist, product] };
-    });
+    })();
   },
 
   removeFromWishlist: (productId) => {
-    set((state) => ({
-      wishlist: state.wishlist.filter((item) => item.id !== productId),
-    }));
+    const prev = get().wishlist;
+    set({ wishlist: prev.filter((item) => item.id !== productId) });
+
+    void (async () => {
+      try {
+        const result = await removeGuestWishlistAction(productId);
+        if (!result.ok) set({ wishlist: prev });
+      } catch {
+        set({ wishlist: prev });
+      }
+    })();
   },
 
   isInWishlist: (productId) =>
     get().wishlist.some((item) => item.id === productId),
 
   moveToCart: (product) => {
-    useCartStore.getState().addToCart(product as CartItem, 1);
-    set((state) => ({
-      wishlist: state.wishlist.filter((item) => item.id !== product.id),
-    }));
+    const price = typeof product.price === "number" ? product.price : 0;
+    const line: CartProductInput = {
+      ...product,
+      id: product.id,
+      price,
+      salePrice: product.salePrice,
+    };
+
+    const wishPrev = get().wishlist;
+    const cartPrev = useCartStore.getState().cart;
+    const nextCart = mergeCartLines(cartPrev, line, 1);
+    const nextWish = wishPrev.filter((item) => item.id !== product.id);
+
+    useCartStore.setState({ cart: nextCart });
+    set({ wishlist: nextWish });
+
+    void (async () => {
+      try {
+        const result = await moveGuestWishlistToCartAction(product.id);
+        if (!result.ok) {
+          useCartStore.setState({ cart: cartPrev });
+          set({ wishlist: wishPrev });
+        }
+      } catch {
+        useCartStore.setState({ cart: cartPrev });
+        set({ wishlist: wishPrev });
+      }
+    })();
   },
 }));
 

@@ -3,13 +3,30 @@ import type { WishlistItem } from "@/lib/stores/wishlistStore";
 import type { ProductListPayload } from "@/lib/products-data";
 import { productPayloadToShopProduct } from "@/lib/products-data";
 
+type CategoryEmbed = {
+  id?: string | number;
+  title?: string | null;
+  name?: string | null;
+};
+
 type ProductEmbed = {
   id?: number | string;
   title?: string;
   price?: number;
   price_after_sale?: number | null;
   images?: unknown;
+  category_id?: string | number | null;
+  category?: CategoryEmbed | CategoryEmbed[] | null;
 };
+
+function categoryNameFromProductEmbed(embed: ProductEmbed): string | null {
+  const c = embed.category;
+  if (c == null) return null;
+  const row = Array.isArray(c) ? c[0] : c;
+  if (!row || typeof row !== "object") return null;
+  const label = row.title ?? row.name;
+  return typeof label === "string" && label.trim() ? label.trim() : null;
+}
 
 function asProductEmbed(v: unknown): ProductEmbed | null {
   if (v == null) return null;
@@ -43,6 +60,8 @@ export function cartJoinToCartItem(
     price: embed.price,
     price_after_sale: embed.price_after_sale ?? null,
     images: embed.images,
+    category_id: embed.category_id ?? null,
+    category_name: categoryNameFromProductEmbed(embed) ?? null,
   };
   const shop = productPayloadToShopProduct(payload);
   return {
@@ -52,6 +71,7 @@ export function cartJoinToCartItem(
     salePrice: shop.salePrice,
     image: shop.image,
     quantity: qty,
+    category: shop.category,
   };
 }
 
@@ -67,6 +87,8 @@ export function wishlistJoinToItem(
     price: embed.price,
     price_after_sale: embed.price_after_sale ?? null,
     images: embed.images,
+    category_id: embed.category_id ?? null,
+    category_name: categoryNameFromProductEmbed(embed) ?? null,
   };
   const shop = productPayloadToShopProduct(payload);
   return {
@@ -75,5 +97,6 @@ export function wishlistJoinToItem(
     price: shop.price,
     salePrice: shop.salePrice,
     image: shop.image,
+    category: shop.category,
   };
 }

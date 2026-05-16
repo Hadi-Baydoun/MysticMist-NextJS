@@ -43,7 +43,7 @@ export default function About() {
   ];
 
   return (
-    <div className="min-h-screen bg-[#F5F5F5] pt-20 overflow-x-hidden">
+    <div className="min-h-screen bg-[#F5F5F5] overflow-x-hidden">
       {/* Hero Section */}
       <section className="relative py-20 overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-b from-[#E5C6ED]/20 to-transparent pointer-events-none" />

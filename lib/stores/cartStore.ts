@@ -11,10 +11,13 @@ import {
 
 export interface CartItem {
   id: string | number;
+  name?: string;
+  image?: string;
   price: number;
   salePrice?: number;
   quantity: number;
-  [key: string]: any;
+  /** Shop category display name from the catalog (e.g. mists / lotions / sets). */
+  category?: string;
 }
 
 /** Payload for add-to-cart (quantity is passed separately). */
@@ -43,6 +46,7 @@ export function mergeCartLines(
     const next = [...cart];
     next[index] = {
       ...next[index],
+      ...product,
       quantity: next[index].quantity + quantity,
     };
     return next;

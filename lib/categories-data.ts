@@ -65,6 +65,26 @@ export function shopCategoryFilterIconHint(
   return "grid";
 }
 
+/**
+ * Short label for cart lines from the product’s shop category (DB display name).
+ * Normalizes to **Lotion**, **Mist**, or **Set** when the name matches those groups.
+ */
+export function cartCategoryDisplayLabel(
+  categoryName: string | undefined | null,
+): string {
+  if (categoryName == null || !String(categoryName).trim()) {
+    return "Product";
+  }
+  const raw = String(categoryName).trim();
+  const n = raw.toLowerCase();
+  if (/\bsets?\b/.test(n) || (n.includes("gift") && n.includes("set"))) {
+    return "Set";
+  }
+  if (n.includes("lotion")) return "Lotion";
+  if (/\bmists?\b/.test(n) || n.includes("mist")) return "Mist";
+  return raw;
+}
+
 export type FetchCategoriesResult =
   | { ok: true; categories: ShopCategoryTile[] }
   | { ok: false; error: string };

@@ -12,9 +12,11 @@ import { mergeCartLines, type CartProductInput, useCartStore } from "./cartStore
 
 export interface WishlistItem {
   id: string | number;
+  name?: string;
+  image?: string;
   price?: number;
   salePrice?: number;
-  [key: string]: any;
+  category?: string;
 }
 
 type WishlistStore = {

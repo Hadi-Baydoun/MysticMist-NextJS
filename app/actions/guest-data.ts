@@ -45,7 +45,15 @@ async function fetchGuestCartItemsForSession(
       `
         quantity,
         product_id,
-        products ( id, title, price, price_after_sale, images )
+        products (
+          id,
+          title,
+          price,
+          price_after_sale,
+          images,
+          category_id,
+          category ( id, title, name )
+        )
       `,
     )
     .eq("session_id", sessionId);
@@ -68,7 +76,15 @@ async function fetchGuestWishlistItemsForSession(
     .select(
       `
         product_id,
-        products ( id, title, price, price_after_sale, images )
+        products (
+          id,
+          title,
+          price,
+          price_after_sale,
+          images,
+          category_id,
+          category ( id, title, name )
+        )
       `,
     )
     .eq("session_id", sessionId);

@@ -2,13 +2,11 @@ import type { SVGProps } from "react";
 import { Mail, Phone, MapPin, Sparkles } from "lucide-react";
 
 import { ScrollToTopLink } from "@/components/ScrollToTopLink";
-
-const FOOTER_COLLECTIONS = [
-  { id: 1, name: "Women" },
-  { id: 2, name: "Men" },
-  { id: 3, name: "Unisex" },
-  { id: 4, name: "Gift Sets" },
-] as const;
+import {
+  fetchCategories,
+  shopCategoryHref,
+  sortShopCategoryTiles,
+} from "@/lib/categories-data";
 
 const WhatsAppIcon = (props: SVGProps<SVGSVGElement>) => (
   <svg
@@ -21,7 +19,11 @@ const WhatsAppIcon = (props: SVGProps<SVGSVGElement>) => (
   </svg>
 );
 
-export function Footer() {
+export async function Footer() {
+  const categoriesRes = await fetchCategories();
+  const categoryTiles = categoriesRes.ok
+    ? sortShopCategoryTiles(categoriesRes.categories)
+    : [];
   return (
     <footer className="relative bg-gradient-to-b from-purple-50/50 via-purple-100/30 to-white border-t border-purple-200/50 overflow-hidden lg:pl-[9rem] lg:pr-[7rem]">
       {/* Decorative Elements */}
@@ -87,27 +89,39 @@ export function Footer() {
             </div>
           </div>
 
-          {/* Collections */}
+          {/* Categories (from catalog) */}
           <div className="col-span-1 sm:col-span-1 lg:col-span-2">
             <div>
               <h4
                 style={{ fontFamily: "var(--font-heading)" }}
                 className="text-base sm:text-lg text-purple-900 mb-4 sm:mb-6"
               >
-                Collections
+                Categories
               </h4>
               <ul className="space-y-2 sm:space-y-3 text-gray-600 text-sm sm:text-base font-body">
-                {FOOTER_COLLECTIONS.map((collection) => (
-                  <li key={collection.id}>
+                {categoryTiles.length === 0 ? (
+                  <li>
                     <ScrollToTopLink
-                      href={`/shop?category=${encodeURIComponent(String(collection.id))}`}
+                      href="/shop"
                       className="group flex items-center cursor-pointer hover:text-purple-700 transition-colors"
                     >
                       <span className="w-0 h-px bg-purple-400 group-hover:w-4 transition-all mr-0 group-hover:mr-2" />
-                      {collection.name}
+                      Shop all
                     </ScrollToTopLink>
                   </li>
-                ))}
+                ) : (
+                  categoryTiles.map((category) => (
+                    <li key={String(category.id)}>
+                      <ScrollToTopLink
+                        href={shopCategoryHref(category.id)}
+                        className="group flex items-center cursor-pointer hover:text-purple-700 transition-colors"
+                      >
+                        <span className="w-0 h-px bg-purple-400 group-hover:w-4 transition-all mr-0 group-hover:mr-2" />
+                        {category.name}
+                      </ScrollToTopLink>
+                    </li>
+                  ))
+                )}
               </ul>
             </div>
           </div>

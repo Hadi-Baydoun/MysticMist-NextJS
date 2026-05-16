@@ -51,6 +51,7 @@ export function ProductDetailClient({
         image: product.image,
         price: product.price,
         salePrice: product.salePrice,
+        category: product.category,
       },
       quantity,
     );
@@ -66,6 +67,7 @@ export function ProductDetailClient({
         image: product.image,
         price: product.price,
         salePrice: product.salePrice,
+        category: product.category,
       });
     }
   };
@@ -93,7 +95,7 @@ export function ProductDetailClient({
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.55 }}
-            className="relative aspect-[2/3] rounded-[28px] overflow-hidden"
+            className="relative aspect-3/3 rounded-[28px] overflow-hidden"
             style={{
               background: "linear-gradient(160deg, #fdf0f8 0%, #f0e4f5 100%)",
               boxShadow: "inset 0 0 0 1px rgba(161,86,180,0.1)",

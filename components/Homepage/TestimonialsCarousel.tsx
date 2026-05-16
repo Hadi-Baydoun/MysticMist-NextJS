@@ -2,7 +2,7 @@
 
 import React, { useRef } from "react";
 import { motion, useInView } from "framer-motion";
-import { Star } from "lucide-react";
+import { Sparkles, Star } from "lucide-react";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Autoplay, Navigation, Pagination } from "swiper/modules";
 
@@ -52,19 +52,26 @@ export function TestimonialsCarousel({
     <>
       <FadeInSection>
         <div className="text-center mb-20">
-          <motion.p
-            style={{
-              fontFamily: "var(--font-heading)",
-            }}
-            className="text-[#a156b4]/70 tracking-[0.3em] uppercase mb-4 font-body"
-            animate={{ opacity: [0.5, 1, 0.5] }}
+          <motion.div
+            className="inline-flex items-center gap-2 mb-4 sm:mb-6"
+            animate={{ y: [0, -5, 0] }}
             transition={{
-              duration: 3,
+              duration: 2,
               repeat: Infinity,
+              ease: "easeInOut",
             }}
           >
-            Testimonials
-          </motion.p>
+            <Sparkles className="w-4 h-4 sm:w-5 sm:h-5 text-[#a156b4]" />
+
+            <p
+              style={{ fontFamily: "var(--font-heading)" }}
+              className="text-[#a156b4]/70 tracking-[0.2em] sm:tracking-[0.4em] uppercase text-xs sm:text-sm font-light"
+            >
+              Testimonials
+            </p>
+
+            <Sparkles className="w-4 h-4 sm:w-5 sm:h-5 text-[#a156b4]" />
+          </motion.div>
 
           <h2
             style={{

@@ -4,7 +4,10 @@ import React, { useRef } from "react";
 import { motion, useInView } from "framer-motion";
 import { Sparkles, ArrowRight } from "lucide-react";
 
-import { INSTAGRAM_PROFILE, type InstagramPost } from "@/lib/instagram-posts-data";
+import {
+  INSTAGRAM_PROFILE,
+  type InstagramPost,
+} from "@/lib/instagram-posts-data";
 
 interface FadeInSectionProps {
   children: React.ReactNode;
@@ -53,11 +56,33 @@ export function CommunitySection({ posts }: { posts: InstagramPost[] }) {
       <FadeInSection>
         <div className="text-center mb-20">
           <div className="flex items-center justify-center mb-8">
-            <Sparkles className="w-6 h-6 text-[#a156b4]" />
+            <motion.div
+              animate={{ rotate: -360 }}
+              transition={{
+                duration: 6,
+                repeat: Infinity,
+                ease: "linear",
+              }}
+            >
+              <Sparkles className="w-6 h-6 text-[#a156b4]" />
+            </motion.div>
+
             <div className="h-px w-24 bg-gradient-to-r from-transparent via-[#E5C6ED] to-transparent mx-4" />
-            <InstagramIcon className="w-10 h-10 shrink-0 text-[#a156b4]" />
+
+            <InstagramIcon className="w-14 h-14 shrink-0 text-[#a156b4]" />
+
             <div className="h-px w-24 bg-gradient-to-l from-transparent via-[#E5C6ED] to-transparent mx-4" />
-            <Sparkles className="w-6 h-6 text-[#a156b4]" />
+
+            <motion.div
+              animate={{ rotate: 360 }}
+              transition={{
+                duration: 6,
+                repeat: Infinity,
+                ease: "linear",
+              }}
+            >
+              <Sparkles className="w-6 h-6 text-[#a156b4]" />
+            </motion.div>
           </div>
 
           <motion.div
@@ -76,16 +101,18 @@ export function CommunitySection({ posts }: { posts: InstagramPost[] }) {
             </p>
           </motion.div>
 
-          <motion.div
-            className="inline-flex items-center space-x-2 mt-6 px-6 py-3 rounded-full bg-white/80 border border-[#E5C6ED]/50"
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-          >
-            <div className="w-2 h-2 rounded-full bg-[#a156b4] animate-pulse" />
-            <span className="text-sm text-[#a156b4]">
-              Latest {posts.length} Posts
-            </span>
-          </motion.div>
+          <div className="flex flex-col items-center gap-4 mt-6">
+            <motion.div
+              className="inline-flex items-center space-x-2 px-6 py-3 rounded-full bg-white/80 border border-[#E5C6ED]/50"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+            >
+              <div className="w-2 h-2 rounded-full bg-[#a156b4] animate-pulse" />
+              <span className="text-sm text-[#a156b4]">
+                Latest {posts.length} Posts
+              </span>
+            </motion.div>
+          </div>
         </div>
       </FadeInSection>
 
@@ -99,22 +126,40 @@ export function CommunitySection({ posts }: { posts: InstagramPost[] }) {
               href={post.link}
               target="_blank"
               rel="noopener noreferrer"
-              className="block relative group"
-              whileHover={{ scale: 1.1 }}
+              className="block relative isolate group overflow-hidden rounded-3xl transform-gpu backface-hidden outline-none focus-visible:ring-2 focus-visible:ring-[#a156b4] focus-visible:ring-offset-2 focus-visible:ring-offset-white"
+              whileHover={{
+                y: -10,
+                transition: { type: "spring", stiffness: 420, damping: 26 },
+              }}
+              transition={{ type: "spring", stiffness: 380, damping: 32 }}
+              whileTap={{ scale: 0.97 }}
             >
-              <div className="aspect-square rounded-3xl overflow-hidden relative bg-gradient-to-br from-[#E5C6ED]/40 to-[#a156b4]/20">
+              <div className="aspect-square rounded-3xl overflow-hidden relative bg-gradient-to-br from-[#E5C6ED]/40 to-[#a156b4]/20 shadow-lg shadow-black/10 ring-2 ring-transparent transition-[box-shadow,ring-color] duration-500 ease-out group-hover:shadow-2xl group-hover:shadow-[#a156b4]/35 group-hover:ring-[#E5C6ED]/60">
                 {post.image ? (
                   <img
                     src={post.image}
                     alt={`Instagram post ${index + 1}`}
-                    className="w-full h-full object-cover"
+                    className="h-full w-full object-cover transition-[transform,filter] duration-[650ms] ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-[1.08]"
                   />
                 ) : null}
 
-                <div className="absolute inset-0 bg-gradient-to-t from-[#a156b4]/80 to-transparent opacity-0 group-hover:opacity-100 transition" />
+                <div className="pointer-events-none absolute inset-0 overflow-hidden rounded-3xl">
+                  <div className="absolute inset-0 -translate-x-[130%] skew-x-[-18deg] bg-gradient-to-r from-transparent via-white/35 to-transparent opacity-0 transition-[transform,opacity] duration-[900ms] ease-out will-change-transform group-hover:translate-x-[130%] group-hover:opacity-100" />
+                </div>
 
-                <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition pointer-events-none">
-                  <InstagramIcon className="w-8 h-8 text-white drop-shadow-md" />
+                <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-transparent to-[#a156b4]/22 opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
+
+                <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-[#2d0c3a]/90 via-[#a156b4]/30 to-transparent opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
+
+                <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center gap-2 opacity-0 transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:opacity-100">
+                  <span className="-translate-y-3 scale-75 transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:translate-y-0 group-hover:scale-100">
+                    <span className="relative flex rounded-full bg-black/35 p-3.5 ring-1 ring-white/45 shadow-lg">
+                      <InstagramIcon className="h-8 w-8 text-white drop-shadow-md" />
+                    </span>
+                  </span>
+                  <span className="translate-y-3 text-[10px] font-medium uppercase tracking-[0.35em] text-white/95 opacity-0 transition-all duration-500 delay-75 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:translate-y-0 group-hover:opacity-100">
+                    View post
+                  </span>
                 </div>
               </div>
             </motion.a>
@@ -123,16 +168,12 @@ export function CommunitySection({ posts }: { posts: InstagramPost[] }) {
       </div>
 
       <div className="text-center mt-20">
-        <a
-          href={INSTAGRAM_PROFILE}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
+        <a href={INSTAGRAM_PROFILE} target="_blank" rel="noopener noreferrer">
           <motion.button
-            className="inline-flex items-center gap-3 px-8 py-4 border-2 border-[#a156b4] text-[#a156b4] rounded-full"
+            className="inline-flex cursor-pointer items-center gap-3 px-8 py-4 border-2 border-[#a156b4] text-[#a156b4] rounded-full"
             whileHover={{ scale: 1.02 }}
           >
-            <InstagramIcon className="w-5 h-5 shrink-0 text-[#a156b4]" />
+            <InstagramIcon className="w-7 h-7 shrink-0 text-[#a156b4]" />
             Follow Us on Instagram
             <ArrowRight className="w-5 h-5" />
           </motion.button>

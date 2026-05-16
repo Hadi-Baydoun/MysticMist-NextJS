@@ -330,7 +330,7 @@ export function FavoritesCarousel({
         </Swiper>
       </div>
 
-      <FadeInSection delay={0.5}>
+      <FadeInSection>
         <div className="text-center mt-16">
           <Link href="/shop">
             <motion.button

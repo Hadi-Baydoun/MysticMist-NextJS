@@ -19,8 +19,9 @@ import {
   Search,
 } from "lucide-react";
 import Link from "next/link";
-import { useSearchParams } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 
+import type { ShopCategoryTile } from "@/lib/categories-data";
 import type { ShopCatalogProduct } from "@/lib/products-data";
 
 type Filters = {
@@ -34,7 +35,18 @@ type Filters = {
 
 const PAGE_SIZE = 6;
 
-function sortProducts(list: ShopCatalogProduct[], sortBy: string): ShopCatalogProduct[] {
+function resolvedShopCategory(
+  raw: string | null,
+  list: ShopCategoryTile[],
+): string {
+  if (raw == null || raw === "") return "all";
+  return list.some((c) => String(c.id) === String(raw)) ? raw : "all";
+}
+
+function sortProducts(
+  list: ShopCatalogProduct[],
+  sortBy: string,
+): ShopCatalogProduct[] {
   const next = [...list];
   const displayPrice = (p: ShopCatalogProduct) => p.salePrice ?? p.price;
 
@@ -79,18 +91,20 @@ function FadeInSection({
 
 function ShopContent({
   initialProducts,
+  categories,
 }: {
   initialProducts: ShopCatalogProduct[];
+  categories: ShopCategoryTile[];
 }) {
+  const router = useRouter();
+  const pathname = usePathname();
   const searchParams = useSearchParams();
 
   const [allProducts] = useState<ShopCatalogProduct[]>(() => initialProducts);
   const [showFilters, setShowFilters] = useState<boolean>(false);
 
-  const categoryFromUrl = searchParams.get("category") ?? "all";
-
   const [filters, setFilters] = useState<Filters>({
-    category: categoryFromUrl,
+    category: resolvedShopCategory(searchParams.get("category"), categories),
     priceRange: { min: "", max: "" },
     sortBy: "createdAt:desc",
     searchQuery: "",
@@ -98,28 +112,46 @@ function ShopContent({
     page: 1,
   });
 
-  const [draftFilters, setDraftFilters] = useState<Omit<Filters, "page">>({
-    category: categoryFromUrl,
-    priceRange: { min: "", max: "" },
-    sortBy: "createdAt:desc",
-    searchQuery: "",
-    onSale: false,
-  });
-
   useEffect(() => {
-    const categoryParam = searchParams.get("category") ?? "all";
+    const categoryParam = resolvedShopCategory(
+      searchParams.get("category"),
+      categories,
+    );
 
     setFilters((prev) => ({
       ...prev,
       category: categoryParam,
       page: 1,
     }));
+  }, [searchParams, categories]);
 
-    setDraftFilters((prev) => ({
+  const categoryOptions = useMemo(
+    () =>
+      [...categories].sort((a, b) =>
+        a.name.localeCompare(b.name, undefined, { sensitivity: "base" }),
+      ),
+    [categories],
+  );
+
+  const updateCategoryQuery = (value: string) => {
+    const category =
+      value === "all" ? "all" : resolvedShopCategory(value, categories);
+
+    setFilters((prev) => ({
       ...prev,
-      category: categoryParam,
+      category,
+      page: 1,
     }));
-  }, [searchParams]);
+
+    const params = new URLSearchParams(searchParams.toString());
+    if (category === "all") {
+      params.delete("category");
+    } else {
+      params.set("category", category);
+    }
+    const qs = params.toString();
+    router.replace(qs ? `${pathname}?${qs}` : pathname, { scroll: false });
+  };
 
   const filteredProducts = useMemo(() => {
     let list = allProducts;
@@ -136,7 +168,7 @@ function ShopContent({
     }
 
     if (filters.onSale) {
-      list = list.filter((p) => p.salePrice != null && p.salePrice < p.price);
+      list = list.filter((p) => p.hasPriceAfterSale === true);
     }
 
     const minP = filters.priceRange.min
@@ -182,21 +214,6 @@ function ShopContent({
     window.scrollTo({ top: 0, behavior: "smooth" });
   }, [filters.page]);
 
-  const handleDraftChange = <K extends keyof typeof draftFilters>(
-    key: K,
-    value: (typeof draftFilters)[K],
-  ) => {
-    setDraftFilters((prev) => ({ ...prev, [key]: value }));
-  };
-
-  const applyFilters = () => {
-    setFilters((prev) => ({
-      ...prev,
-      ...draftFilters,
-      page: 1,
-    }));
-  };
-
   const handlePageChange = (newPage: number) => {
     if (newPage >= 1 && newPage <= pageCount) {
       setFilters((prev) => ({ ...prev, page: newPage }));
@@ -204,7 +221,7 @@ function ShopContent({
   };
 
   return (
-    <div className="min-h-screen bg-[#F5F5F5] pt-40 pb-12">
+    <div className="min-h-screen bg-[#F5F5F5] pt-20 pb-12">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-12">
         <FadeInSection>
           <div className="text-center">
@@ -264,9 +281,13 @@ function ShopContent({
                 <div className="relative">
                   <input
                     type="text"
-                    value={draftFilters.searchQuery}
+                    value={filters.searchQuery}
                     onChange={(e) =>
-                      handleDraftChange("searchQuery", e.target.value)
+                      setFilters((prev) => ({
+                        ...prev,
+                        searchQuery: e.target.value,
+                        page: 1,
+                      }))
                     }
                     placeholder="Search products..."
                     className="w-full pl-10 pr-4 py-2 rounded-lg border border-[#E5C6ED]"
@@ -275,13 +296,76 @@ function ShopContent({
                 </div>
               </div>
 
-              <button
-                type="button"
-                onClick={applyFilters}
-                className="w-full py-3 bg-[#a156b4] text-white rounded-xl"
-              >
-                Apply Filters
-              </button>
+              <div className="mb-8">
+                <h3 className="text-xl text-[#a156b4] mb-4">Category</h3>
+                <select
+                  value={filters.category}
+                  onChange={(e) => updateCategoryQuery(e.target.value)}
+                  className="w-full py-2 px-3 rounded-lg border border-[#E5C6ED] bg-white text-gray-800 focus:outline-none focus:ring-2 focus:ring-[#a156b4]/30"
+                >
+                  <option value="all">All categories</option>
+                  {categoryOptions.map((c) => (
+                    <option key={String(c.id)} value={String(c.id)}>
+                      {c.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="mb-8">
+                <h3 className="text-xl text-[#a156b4] mb-4">Sort by</h3>
+                <select
+                  value={filters.sortBy}
+                  onChange={(e) =>
+                    setFilters((prev) => ({
+                      ...prev,
+                      sortBy: e.target.value,
+                      page: 1,
+                    }))
+                  }
+                  className="w-full py-2 px-3 rounded-lg border border-[#E5C6ED] bg-white text-gray-800 focus:outline-none focus:ring-2 focus:ring-[#a156b4]/30"
+                >
+                  <option value="createdAt:desc">Newest first</option>
+                  <option value="price:asc">Price: low to high</option>
+                  <option value="price:desc">Price: high to low</option>
+                </select>
+              </div>
+
+              <div className="mb-8">
+                <h3 className="text-xl text-[#a156b4] mb-4">Offers</h3>
+                <button
+                  type="button"
+                  role="switch"
+                  aria-checked={filters.onSale}
+                  onClick={() =>
+                    setFilters((prev) => ({
+                      ...prev,
+                      onSale: !prev.onSale,
+                      page: 1,
+                    }))
+                  }
+                  className={`w-full flex items-center justify-between gap-3 px-4 py-3 rounded-xl border transition-colors ${
+                    filters.onSale
+                      ? "border-[#a156b4] bg-[#a156b4]/10 text-[#a156b4]"
+                      : "border-[#E5C6ED] bg-white text-gray-700 hover:border-[#E5C6ED]"
+                  }`}
+                >
+                  <span className="text-sm font-medium text-left">
+                    On sale only
+                  </span>
+                  <span
+                    className={`shrink-0 h-6 w-11 rounded-full relative transition-colors ${
+                      filters.onSale ? "bg-[#a156b4]" : "bg-gray-300"
+                    }`}
+                  >
+                    <span
+                      className={`absolute top-0.5 left-0.5 h-5 w-5 rounded-full bg-white shadow transition-transform ${
+                        filters.onSale ? "translate-x-5" : ""
+                      }`}
+                    />
+                  </span>
+                </button>
+              </div>
             </div>
           </aside>
 
@@ -367,18 +451,20 @@ function ShopContent({
 
 export default function ShopPageClient({
   initialProducts,
+  categories,
 }: {
   initialProducts: ShopCatalogProduct[];
+  categories: ShopCategoryTile[];
 }) {
   return (
     <Suspense
       fallback={
-        <div className="min-h-screen bg-[#F5F5F5] pt-40 pb-24 text-center text-[#a156b4]/80">
+        <div className="min-h-screen bg-[#F5F5F5] pt-20 pb-24 text-center text-[#a156b4]/80">
           Loading shop…
         </div>
       }
     >
-      <ShopContent initialProducts={initialProducts} />
+      <ShopContent initialProducts={initialProducts} categories={categories} />
     </Suspense>
   );
 }

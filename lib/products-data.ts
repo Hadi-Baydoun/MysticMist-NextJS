@@ -64,6 +64,8 @@ export type ShopCatalogProduct = {
   categoryId?: string | number | null;
   price: number;
   salePrice?: number;
+  /** True when `price_after_sale` is set in the database (may equal list price). */
+  hasPriceAfterSale?: boolean;
   specialTags: string[];
   image: string;
   createdAt?: string;
@@ -193,9 +195,10 @@ export function productPayloadToShopProduct(p: ProductListPayload): ShopCatalogP
 
   const price = typeof p.price === "number" ? p.price : 0;
   const after = p.price_after_sale;
+  const hasPriceAfterSale =
+    after != null && typeof after === "number";
   const salePrice =
-    after != null &&
-    typeof after === "number" &&
+    hasPriceAfterSale &&
     typeof p.price === "number" &&
     after < p.price
       ? after
@@ -208,6 +211,7 @@ export function productPayloadToShopProduct(p: ProductListPayload): ShopCatalogP
     categoryId: p.category_id ?? null,
     price,
     salePrice,
+    hasPriceAfterSale,
     specialTags: [...new Set(tagNames)],
     image: primaryProductImage(p.images),
     createdAt: typeof p.created_at === "string" ? p.created_at : undefined,

@@ -1,3 +1,4 @@
+import { fetchCategories } from "@/lib/categories-data";
 import {
   fetchProducts,
   productPayloadToShopProduct,
@@ -6,14 +7,30 @@ import {
 import ShopPageClient from "./shop-page-client";
 
 export default async function ShopPage() {
-  const result = await fetchProducts();
-  if (!result.ok) {
-    console.error("products fetch failed:", result.error);
+  const [productsResult, categoriesResult] = await Promise.all([
+    fetchProducts(),
+    fetchCategories(),
+  ]);
+
+  if (!productsResult.ok) {
+    console.error("products fetch failed:", productsResult.error);
+  }
+  if (!categoriesResult.ok) {
+    console.error("categories fetch failed:", categoriesResult.error);
   }
 
-  const initialProducts = result.ok
-    ? result.products.map(productPayloadToShopProduct).filter((p) => p.id !== "")
+  const initialProducts = productsResult.ok
+    ? productsResult.products
+        .map(productPayloadToShopProduct)
+        .filter((p) => p.id !== "")
     : [];
 
-  return <ShopPageClient initialProducts={initialProducts} />;
+  const categories = categoriesResult.ok ? categoriesResult.categories : [];
+
+  return (
+    <ShopPageClient
+      initialProducts={initialProducts}
+      categories={categories}
+    />
+  );
 }

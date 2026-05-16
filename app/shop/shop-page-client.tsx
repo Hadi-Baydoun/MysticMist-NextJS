@@ -222,7 +222,7 @@ function ShopContent({
 
   return (
     <div className="min-h-screen bg-[#F5F5F5] pt-20 pb-12">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-12">
+      <div className="max-w-7xl mx-auto px-4  lg:px-0 mb-12">
         <FadeInSection>
           <div className="text-center">
             <motion.div

@@ -45,7 +45,7 @@ export function BackToTop() {
             stiffness: 260,
             damping: 20,
           }}
-          className="fixed bottom-8 right-8 z-50 group"
+          className="fixed bottom-8 right-8 z-50 group "
         >
           <motion.div
             className="absolute -top-6 -left-6 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
@@ -114,7 +114,7 @@ export function BackToTop() {
               onClick={scrollToTop}
               whileHover={{ scale: 1.1 }}
               whileTap={{ scale: 0.9 }}
-              className="relative w-16 h-16 rounded-full bg-gradient-to-br from-[#E5C6ED] to-[#a156b4] shadow-2xl shadow-[#a156b4]/40 flex items-center justify-center overflow-hidden group"
+              className="relative w-16 h-16 cursor-pointer rounded-full bg-gradient-to-br from-[#E5C6ED] to-[#a156b4] shadow-2xl shadow-[#a156b4]/40 flex items-center justify-center overflow-hidden group"
             >
               <motion.div
                 className="absolute inset-0 bg-gradient-to-br from-white/40 to-transparent opacity-0 group-hover:opacity-100"
@@ -190,7 +190,7 @@ export function BackToTop() {
               <div className="bg-gradient-to-r from-[#E5C6ED] to-[#a156b4] px-4 py-2 rounded-full shadow-lg">
                 <span
                   className="text-white text-sm"
-                  style={{ fontFamily: "var(--font-geist-sans)" }}
+                  style={{ fontFamily: "var(--font-body)" }}
                 >
                   Back to Top
                 </span>

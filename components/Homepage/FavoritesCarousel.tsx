@@ -126,38 +126,37 @@ export function FavoritesCarousel({
               <Link href={`/product/${product.id}`} className="block">
                 <div className="group relative max-w-xs mx-auto cursor-pointer transition-transform duration-300 ease-out">
                   <div className="relative aspect-[3/4] rounded-3xl overflow-hidden bg-gradient-to-br from-[#E5C6ED]/20 to-[#a156b4]/10 shadow-xl sm:shadow-2xl group-hover:shadow-[0_25px_50px_-12px_rgba(161,86,180,0.25)] border-2 sm:border-4 border-white group-hover:border-[#E5C6ED] transition-all duration-500 mb-6">
-                    {product.salePrice &&
-                      product.salePrice < product.price && (
-                        <motion.div
-                          className="absolute top-0 right-0 z-30"
-                          animate={{ scale: [1, 1.1, 1] }}
-                          transition={{
-                            duration: 2,
-                            repeat: Infinity,
-                          }}
-                        >
-                          <div className="relative">
-                            <div className="px-3 py-1.5 rounded-bl-3xl rounded-tr-3xl bg-gradient-to-r from-[#a156b4] to-[#8e4a9f] text-white text-xs sm:text-sm backdrop-blur-sm shadow-lg font-body flex items-center space-x-1.5">
-                              <Tag
-                                className="w-3 h-3 sm:w-3.5 sm:h-3.5"
-                                strokeWidth={2.5}
-                              />
+                    {product.salePrice && product.salePrice < product.price && (
+                      <motion.div
+                        className="absolute top-0 right-0 z-30"
+                        animate={{ scale: [1, 1.1, 1] }}
+                        transition={{
+                          duration: 2,
+                          repeat: Infinity,
+                        }}
+                      >
+                        <div className="relative">
+                          <div className="px-3 py-1.5 rounded-bl-3xl rounded-tr-3xl bg-gradient-to-r from-[#a156b4] to-[#8e4a9f] text-white text-xs sm:text-sm backdrop-blur-sm shadow-lg font-body flex items-center space-x-1.5">
+                            <Tag
+                              className="w-3 h-3 sm:w-3.5 sm:h-3.5"
+                              strokeWidth={2.5}
+                            />
 
-                              <span>
-                                -
-                                {Math.round(
-                                  ((product.price - product.salePrice) /
-                                    product.price) *
-                                    100,
-                                )}
-                                %
-                              </span>
-                            </div>
-
-                            <div className="absolute inset-0 rounded-bl-3xl rounded-tr-3xl bg-[#a156b4]/30 blur-md -z-10" />
+                            <span>
+                              -
+                              {Math.round(
+                                ((product.price - product.salePrice) /
+                                  product.price) *
+                                  100,
+                              )}
+                              %
+                            </span>
                           </div>
-                        </motion.div>
-                      )}
+
+                          <div className="absolute inset-0 rounded-bl-3xl rounded-tr-3xl bg-[#a156b4]/30 blur-md -z-10" />
+                        </div>
+                      </motion.div>
+                    )}
 
                     <div className="w-full h-full">
                       <img
@@ -338,7 +337,7 @@ export function FavoritesCarousel({
               style={{
                 fontFamily: "var(--font-heading)",
               }}
-              className="group relative inline-flex items-center gap-3 px-8 py-4 bg-transparent border-2 border-[#a156b4] text-[#a156b4] rounded-full text-base sm:text-lg font-medium transition-all duration-300 hover:bg-[#a156b4] hover:text-white hover:shadow-lg hover:shadow-[#a156b4]/30 overflow-hidden"
+              className="group relative cursor-pointer inline-flex items-center gap-3 px-8 py-4 bg-transparent border-2 border-[#a156b4] text-[#a156b4] rounded-full text-base sm:text-lg font-medium transition-all duration-300 hover:bg-[#a156b4] hover:text-white hover:shadow-lg hover:shadow-[#a156b4]/30 overflow-hidden"
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
             >

@@ -31,7 +31,7 @@ export function Footer() {
 
       <div className="absolute bottom-0 left-4 sm:left-10 lg:left-20 w-32 h-32 sm:w-48 sm:h-48 lg:w-64 lg:h-64 bg-gradient-to-br from-[#a156b4]/20 to-[#E5C6ED]/10 rounded-full blur-3xl" />
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 lg:py-16 relative z-10">
+      <div className="max-w-7xl mx-auto px-4  lg:px-0 py-8 sm:py-12 lg:py-16 relative z-10">
         {/* Main Content */}
         <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-12 gap-4 sm:gap-10 lg:gap-12 mb-8 sm:mb-12 lg:mb-16">
           {/* Brand Section */}

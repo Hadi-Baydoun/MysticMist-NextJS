@@ -109,9 +109,9 @@ export function CategorySection({
             <Link
               key={collection.id}
               href={`/shop?category=${encodeURIComponent(String(collection.id))}`}
-              className="block group transition-transform duration-300 ease-out hover:-translate-y-3"
+              className="block group"
             >
-              <div className="relative w-full max-w-xs mx-auto sm:max-w-none transition-transform duration-300 ease-out group-hover:-translate-y-5 group-hover:scale-105">
+              <div className="relative w-full max-w-xs mx-auto sm:max-w-none transition-transform duration-300 ease-out group-hover:scale-105">
                 <div className="relative aspect-[4/5] overflow-hidden mb-4 sm:mb-5 rounded-lg shadow-xl sm:shadow-2xl border-2 sm:border-4 border-white">
                   <img
                     src={collection.image ?? ""}
@@ -163,7 +163,7 @@ export function CategorySection({
               <Link
                 key={collection.id}
                 href={`/shop?category=${encodeURIComponent(String(collection.id))}`}
-                className="block group absolute bottom-0 transition-transform duration-300 ease-out hover:-translate-y-4"
+                className="block group absolute bottom-0"
                 style={{
                   left: "50%",
                   transform: `translateX(calc(-50% + ${translateX}px))`,
@@ -171,7 +171,7 @@ export function CategorySection({
                 }}
               >
                 <div
-                  className="relative w-72 xl:w-80 transition-transform duration-300 ease-out group-hover:-translate-y-16 group-hover:scale-110"
+                  className="relative w-72 xl:w-80 transition-transform duration-300 ease-out group-hover:scale-110"
                   style={{
                     transformOrigin: "bottom center",
                     transform: `rotate(${rotation}deg)`,

@@ -57,7 +57,7 @@ export default function About() {
           <Sparkles className="w-6 h-6 text-[#a156b4]" />
         </div>
 
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+        <div className="max-w-7xl mx-auto px-4  lg:px-0 relative z-10">
           <motion.div
             initial="hidden"
             whileInView="visible"

@@ -15,15 +15,21 @@ import "swiper/css/pagination";
 interface FadeInSectionProps {
   children: React.ReactNode;
   delay?: number;
+  className?: string;
 }
 
-function FadeInSection({ children, delay = 0 }: FadeInSectionProps) {
+function FadeInSection({
+  children,
+  delay = 0,
+  className = "",
+}: FadeInSectionProps) {
   const ref = useRef<HTMLDivElement | null>(null);
   const isInView = useInView(ref, { once: true, amount: 0.2 });
 
   return (
     <motion.div
       ref={ref}
+      className={className}
       initial={{ opacity: 0, y: 50 }}
       animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 50 }}
       transition={{
@@ -102,18 +108,21 @@ export function TestimonialsCarousel({
               spaceBetween: 30,
             },
           }}
-          className="!pb-12 !px-4 !pt-4"
+          className="testimonials-swiper !h-auto !pb-12 !px-4 !pt-4 [&_.swiper-slide]:!flex [&_.swiper-slide]:!h-auto [&_.swiper-wrapper]:!h-auto [&_.swiper-wrapper]:!items-stretch"
         >
           {testimonials.map((testimonial, index) => (
             <SwiperSlide key={`${String(testimonial.id)}-${index}`}>
-              <FadeInSection delay={index * 0.15}>
+              <FadeInSection
+                delay={index * 0.15}
+                className="flex h-full w-full flex-1"
+              >
                 <motion.div
                   whileHover={{
                     y: -12,
                     scale: 1.02,
                   }}
                   transition={{ duration: 0.2 }}
-                  className="p-8 rounded-3xl bg-gradient-to-br from-white/80 to-[#E5C6ED]/20 backdrop-blur-sm border border-[#E5C6ED]/30 shadow-xl h-full flex flex-col"
+                  className="flex h-full min-h-full w-full flex-1 flex-col rounded-3xl border border-[#E5C6ED]/30 bg-gradient-to-br from-white/80 to-[#E5C6ED]/20 p-8 shadow-xl backdrop-blur-sm"
                 >
                   <div className="flex items-center space-x-4 mb-6">
                     <motion.div
@@ -161,7 +170,7 @@ export function TestimonialsCarousel({
                     ))}
                   </div>
 
-                  <p className="text-gray-700 italic flex-1">
+                  <p className="flex-1 text-gray-700 italic">
                     &quot;{testimonial.quote}&quot;
                   </p>
                 </motion.div>

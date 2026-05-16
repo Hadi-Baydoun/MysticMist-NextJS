@@ -46,8 +46,8 @@ export function Navbar() {
           : "bg-white/70 backdrop-blur-md border-b border-purple-100/30"
       }`}
     >
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 ">
-        <div className="flex justify-between items-center h-24 relative">
+      <div className="max-w-7xl mx-auto px-4  lg:px-0 ">
+        <div className="flex justify-between items-center h-20 relative">
           {/* Logo with Animation - Fixed width to prevent nav shift */}
           <Link
             href="/"
@@ -258,9 +258,7 @@ export function Navbar() {
                   <span>
                     Cart
                     {cartCount > 0 ? (
-                      <span className="text-[#a156b4] ml-1">
-                        ({cartCount})
-                      </span>
+                      <span className="text-[#a156b4] ml-1">({cartCount})</span>
                     ) : null}
                   </span>
                 </Link>

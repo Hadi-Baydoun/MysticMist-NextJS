@@ -16,7 +16,11 @@ import type { ShopProductDetail } from "@/lib/products-data";
 import { useCart } from "@/lib/stores/cartStore";
 import { useWishlist } from "@/lib/stores/wishlistStore";
 
-export function ProductDetailClient({ product }: { product: ShopProductDetail }) {
+export function ProductDetailClient({
+  product,
+}: {
+  product: ShopProductDetail;
+}) {
   const [activeIndex, setActiveIndex] = useState(0);
   const [quantity, setQuantity] = useState(1);
   const { addToCart } = useCart();
@@ -68,7 +72,7 @@ export function ProductDetailClient({ product }: { product: ShopProductDetail })
 
   return (
     <div className="min-h-screen bg-[#F5F5F5] pb-16">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6">
+      <div className="max-w-7xl mx-auto px-4  lg:px-0 pt-6">
         <Link
           href="/shop"
           className="inline-flex items-center gap-2 text-sm text-[#a156b4] hover:text-[#8e4a9f] transition-colors mb-8"
@@ -94,7 +98,9 @@ export function ProductDetailClient({ product }: { product: ShopProductDetail })
               <button
                 type="button"
                 onClick={toggleWishlist}
-                aria-label={inWishlist ? "Remove from wishlist" : "Add to wishlist"}
+                aria-label={
+                  inWishlist ? "Remove from wishlist" : "Add to wishlist"
+                }
                 className="absolute top-4 right-4 z-10 p-3 rounded-full bg-white/95 border border-[#E5C6ED]/60 text-[#a156b4] shadow-md hover:bg-[#E5C6ED]/30 transition-colors"
               >
                 <Heart

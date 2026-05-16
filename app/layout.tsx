@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Inter, Playfair_Display } from "next/font/google";
 
 import { GuestCartWishlistSync } from "@/components/GuestCartWishlistSync";
 import { BackToTop } from "@/components/ui/BackToTop";
@@ -8,13 +8,13 @@ import { Footer } from "@/components/Footer/Footer";
 
 import "./globals.css";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+const inter = Inter({
+  variable: "--font-body",
   subsets: ["latin"],
 });
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
+const playfair = Playfair_Display({
+  variable: "--font-heading",
   subsets: ["latin"],
 });
 
@@ -41,12 +41,12 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      className={`${inter.variable} ${playfair.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col">
+      <body className="min-h-full flex flex-col font-body">
         <GuestCartWishlistSync />
         <Navbar />
-        <main className="flex-1 mt-24">{children}</main>
+        <main className="flex-1 mt-8">{children}</main>
         <BackToTop />
         <Footer />
       </body>

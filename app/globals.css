@@ -1,5 +1,18 @@
 @import "tailwindcss";
 
+@theme {
+  --font-sans: var(--font-body), ui-sans-serif, system-ui, sans-serif;
+  --font-serif: var(--font-heading), ui-serif, Georgia, serif;
+}
+
+@utility font-body {
+  font-family: var(--font-body), ui-sans-serif, system-ui, sans-serif;
+}
+
+@utility font-heading {
+  font-family: var(--font-heading), ui-serif, Georgia, serif;
+}
+
 /* Mystic Mist — shared tokens for UI primitives and skeletons */
 :root {
   --mystic-purple: #a156b4;
@@ -7,4 +20,17 @@
   --mystic-purple-soft: rgba(161, 86, 180, 0.08);
   --mystic-lavender-mid: rgba(229, 198, 237, 0.55);
   --mystic-card-shadow: 0 14px 44px -18px rgba(161, 86, 180, 0.35);
+}
+
+body {
+  font-family: var(--font-body), ui-sans-serif, system-ui, sans-serif;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: var(--font-heading), ui-serif, Georgia, serif;
 }

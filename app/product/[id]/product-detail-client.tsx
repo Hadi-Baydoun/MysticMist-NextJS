@@ -30,6 +30,8 @@ export function ProductDetailClient({
   const displayPrice = product.salePrice ?? product.price;
   const canAdd = product.stock > 0;
   const maxQty = product.stock > 0 ? product.stock : 1;
+  const isOnSale =
+    product.salePrice != null && product.salePrice < product.price;
 
   const bumpQty = (delta: number) => {
     setQuantity((q) => {
@@ -71,179 +73,304 @@ export function ProductDetailClient({
   const mainImage = product.images[activeIndex] ?? product.image;
 
   return (
-    <div className="min-h-screen bg-[#F5F5F5] pb-16">
-      <div className="max-w-7xl mx-auto px-4  lg:px-0 pt-6">
+    <div className="min-h-screen bg-[#F5F0F7] py-20">
+      {/* Back link */}
+      <div className="max-w-7xl mx-auto px-4 lg:px-8 pt-6">
         <Link
           href="/shop"
-          className="inline-flex items-center gap-2 text-sm text-[#a156b4] hover:text-[#8e4a9f] transition-colors mb-8"
+          className="inline-flex items-center gap-1.5 text-xs tracking-widest uppercase text-[#b07090] hover:text-[#a156b4] transition-colors"
         >
-          <ChevronLeft className="w-4 h-4" />
+          <ChevronLeft className="w-3.5 h-3.5" />
           Back to shop
         </Link>
+      </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-14 items-start">
-          <div className="space-y-4">
-            <motion.div
-              initial={{ opacity: 0, y: 16 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5 }}
-              className="relative aspect-[3/4] rounded-3xl overflow-hidden bg-white border border-[#E5C6ED]/50 shadow-[var(--mystic-card-shadow)]"
-            >
-              <img
-                src={mainImage}
-                alt={product.name}
-                className="w-full h-full object-cover"
-              />
-
-              <button
-                type="button"
-                onClick={toggleWishlist}
-                aria-label={
-                  inWishlist ? "Remove from wishlist" : "Add to wishlist"
-                }
-                className="absolute top-4 right-4 z-10 p-3 rounded-full bg-white/95 border border-[#E5C6ED]/60 text-[#a156b4] shadow-md hover:bg-[#E5C6ED]/30 transition-colors"
-              >
-                <Heart
-                  className={`w-5 h-5 ${inWishlist ? "fill-[#a156b4]" : ""}`}
-                />
-              </button>
-            </motion.div>
-
-            {product.images.length > 1 ? (
-              <div className="flex gap-3 overflow-x-auto pb-2">
-                {product.images.map((src, i) => (
-                  <button
-                    key={`${src}-${i}`}
-                    type="button"
-                    onClick={() => setActiveIndex(i)}
-                    className={`shrink-0 w-20 h-20 rounded-xl overflow-hidden border-2 transition-all ${
-                      i === activeIndex
-                        ? "border-[#a156b4] ring-2 ring-[#a156b4]/25"
-                        : "border-transparent opacity-70 hover:opacity-100"
-                    }`}
-                  >
-                    <img
-                      src={src}
-                      alt=""
-                      className="w-full h-full object-cover"
-                    />
-                  </button>
-                ))}
-              </div>
-            ) : null}
-          </div>
-
+      {/* Main grid */}
+      <div className="max-w-7xl mx-auto px-4 lg:px-8 mt-8 grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20 items-start">
+        {/* ── Image column ── */}
+        <div className="space-y-4">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.55, delay: 0.08 }}
-            className="space-y-6"
+            transition={{ duration: 0.55 }}
+            className="relative aspect-[2/3] rounded-[28px] overflow-hidden"
+            style={{
+              background: "linear-gradient(160deg, #fdf0f8 0%, #f0e4f5 100%)",
+              boxShadow: "inset 0 0 0 1px rgba(161,86,180,0.1)",
+            }}
           >
-            <div className="inline-flex items-center gap-2 text-[#a156b4]/70 tracking-[0.2em] uppercase text-xs font-light">
-              <Sparkles className="w-4 h-4 text-[#a156b4]" />
-              {product.category ?? "Product"}
-            </div>
+            <img
+              src={mainImage}
+              alt={product.name}
+              className="w-full h-full object-cover"
+            />
 
-            <h1
-              style={{ fontFamily: "var(--font-heading)" }}
-              className="text-4xl md:text-5xl text-[#a156b4] leading-tight"
+            {/* Sale ribbon */}
+            {isOnSale && (
+              <div className="absolute top-5 left-5">
+                <span
+                  className="text-[10px] tracking-[0.2em] uppercase font-medium px-3 py-1.5 rounded-full text-white"
+                  style={{ background: "#a156b4" }}
+                >
+                  Sale
+                </span>
+              </div>
+            )}
+
+            {/* Wishlist button */}
+            <button
+              type="button"
+              onClick={toggleWishlist}
+              aria-label={
+                inWishlist ? "Remove from wishlist" : "Add to wishlist"
+              }
+              className="absolute top-5 right-5 z-10 flex items-center gap-2 px-4 py-2.5 rounded-full transition-all duration-200 cursor-pointer"
+              style={{
+                background: inWishlist ? "#E5C6ED" : "rgba(255,255,255,0.92)",
+                border: "1px solid #e0c8d8",
+                backdropFilter: "blur(6px)",
+              }}
             >
-              {product.name}
-            </h1>
+              <Heart
+                className="w-4 h-4"
+                style={{ color: "#a156b4" }}
+                fill={inWishlist ? "#a156b4" : "none"}
+              />
+              <span className="text-[11px] tracking-widest uppercase text-[#a156b4] font-medium">
+                {inWishlist ? "Remove from wishlist" : "Add to wishlist"}
+              </span>
+            </button>
+          </motion.div>
 
+          {/* Thumbnail strip */}
+          {product.images.length > 1 && (
+            <div className="flex gap-2.5 overflow-x-auto pb-1">
+              {product.images.map((src, i) => (
+                <button
+                  key={`${src}-${i}`}
+                  type="button"
+                  onClick={() => setActiveIndex(i)}
+                  className="shrink-0 w-16 h-16 rounded-2xl overflow-hidden transition-all duration-200"
+                  style={{
+                    border:
+                      i === activeIndex
+                        ? "2px solid #a156b4"
+                        : "2px solid transparent",
+                    opacity: i === activeIndex ? 1 : 0.5,
+                  }}
+                  onMouseEnter={(e) => {
+                    if (i !== activeIndex)
+                      (e.currentTarget as HTMLButtonElement).style.opacity =
+                        "0.8";
+                  }}
+                  onMouseLeave={(e) => {
+                    if (i !== activeIndex)
+                      (e.currentTarget as HTMLButtonElement).style.opacity =
+                        "0.5";
+                  }}
+                >
+                  <img
+                    src={src}
+                    alt=""
+                    className="w-full h-full object-cover"
+                  />
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* ── Details column ── */}
+        <motion.div
+          initial={{ opacity: 0, y: 24 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.1 }}
+          className="space-y-7 lg:pt-6"
+        >
+          {/* Eyebrow with decorative rules */}
+          <div className="flex items-center gap-3">
+            <span className="h-px w-6 bg-[#E5C6ED]" />
+            <div className="flex items-center gap-1.5">
+              <Sparkles className="w-3 h-3 text-[#c4a0b4]" />
+              <span className="text-[10px] tracking-[0.22em] uppercase text-[#b07090] font-medium">
+                {product.category ?? "Product"}
+              </span>
+            </div>
+            <span className="h-px w-6 bg-[#E5C6ED]" />
+          </div>
+
+          {/* Product name */}
+          <h1
+            style={{ fontFamily: "var(--font-heading)", lineHeight: "1.05" }}
+            className="text-5xl md:text-6xl text-[#a156b4] tracking-tight"
+          >
+            {product.name}
+          </h1>
+
+          {/* Special tags */}
+          {product.specialTags.length > 0 && (
             <div className="flex flex-wrap gap-2">
               {product.specialTags.map((tag) => (
                 <span
                   key={tag}
-                  className="px-3 py-1 rounded-full text-xs bg-[#E5C6ED]/40 text-[#a156b4] border border-[#E5C6ED]/60"
+                  className="px-4 py-1.5 rounded-full text-[11px] tracking-widest uppercase font-medium bg-white border text-[#a156b4]"
+                  style={{ borderColor: "#E5C6ED" }}
                 >
                   {tag}
                 </span>
               ))}
             </div>
+          )}
 
-            <div className="flex items-baseline gap-3">
-              <span
-                style={{ fontFamily: "var(--font-heading)" }}
-                className="text-3xl text-[#a156b4]"
-              >
-                ${displayPrice}
-              </span>
-              {product.salePrice != null &&
-                product.salePrice < product.price && (
-                  <span
-                    style={{ fontFamily: "var(--font-heading)" }}
-                    className="text-xl text-gray-400 line-through"
-                  >
-                    ${product.price}
-                  </span>
-                )}
-            </div>
+          {/* Price */}
+          <div className="flex items-baseline gap-3 pt-1">
+            <span
+              style={{ fontFamily: "var(--font-heading)" }}
+              className="text-4xl text-[#a156b4]"
+            >
+              ${displayPrice}
+            </span>
+            {isOnSale && (
+              <>
+                <span
+                  style={{ fontFamily: "var(--font-heading)" }}
+                  className="text-2xl text-[#c4a0b4] line-through"
+                >
+                  ${product.price}
+                </span>
+                <span
+                  className="text-[10px] tracking-[0.2em] uppercase font-medium px-3 py-1 rounded-full text-white"
+                  style={{ background: "#a156b4" }}
+                >
+                  Sale
+                </span>
+              </>
+            )}
+          </div>
 
-            <p className="text-sm text-gray-600">
-              {product.stock > 0 ? (
-                <>
+          {/* Stock */}
+          <div className="flex items-center gap-2">
+            {product.stock > 0 ? (
+              <>
+                <span
+                  className="w-2 h-2 rounded-full flex-shrink-0"
+                  style={{ background: "#a156b4" }}
+                />
+                <p className="text-sm text-[#b07090]">
                   <span className="font-medium text-[#a156b4]">
                     {product.stock}
                   </span>{" "}
-                  in stock
-                </>
-              ) : (
-                <span className="text-red-600 font-medium">Out of stock</span>
-              )}
-            </p>
-
-            {product.description ? (
-              <div className="prose prose-sm max-w-none text-gray-700 leading-relaxed whitespace-pre-line border-t border-[#E5C6ED]/50 pt-6">
-                {product.description}
-              </div>
+                  left in stock
+                </p>
+              </>
             ) : (
-              <p className="text-gray-500 text-sm border-t border-[#E5C6ED]/50 pt-6">
-                No description available for this item.
-              </p>
+              <>
+                <span className="w-2 h-2 rounded-full flex-shrink-0 bg-red-300" />
+                <p className="text-sm text-red-500 font-medium">Out of stock</p>
+              </>
             )}
+          </div>
 
-            <div className="flex flex-col sm:flex-row sm:items-center gap-4 pt-4">
-              <div className="flex items-center gap-3">
-                <span className="text-sm text-gray-600">Quantity</span>
-                <div className="flex items-center rounded-xl border border-[#E5C6ED] bg-white">
-                  <button
-                    type="button"
-                    onClick={() => bumpQty(-1)}
-                    disabled={quantity <= 1}
-                    className="p-3 text-[#a156b4] disabled:opacity-40"
-                    aria-label="Decrease quantity"
-                  >
-                    <Minus className="w-4 h-4" />
-                  </button>
-                  <span className="w-10 text-center font-medium text-gray-800">
-                    {quantity}
-                  </span>
-                  <button
-                    type="button"
-                    onClick={() => bumpQty(1)}
-                    disabled={quantity >= maxQty || !canAdd}
-                    className="p-3 text-[#a156b4] disabled:opacity-40"
-                    aria-label="Increase quantity"
-                  >
-                    <Plus className="w-4 h-4" />
-                  </button>
-                </div>
-              </div>
+          {/* Divider */}
+          <div
+            className="h-px w-full"
+            style={{
+              background: "linear-gradient(90deg, #E5C6ED, transparent)",
+            }}
+          />
 
-              <button
-                type="button"
-                onClick={handleAddToCart}
-                disabled={!canAdd}
-                style={{ fontFamily: "var(--font-heading)" }}
-                className="inline-flex items-center justify-center gap-2 flex-1 sm:flex-none min-w-[200px] px-8 py-4 rounded-full bg-[#a156b4] text-white font-medium shadow-lg shadow-[#a156b4]/25 hover:bg-[#8e4a9f] disabled:opacity-45 disabled:cursor-not-allowed transition-colors"
+          {/* Description */}
+          {product.description ? (
+            <p className="text-sm text-[#7a6070] leading-relaxed whitespace-pre-line">
+              {product.description}
+            </p>
+          ) : (
+            <p className="text-sm text-[#b07090]">
+              No description available for this item.
+            </p>
+          )}
+
+          {/* Divider */}
+          <div
+            className="h-px w-full"
+            style={{
+              background: "linear-gradient(90deg, #E5C6ED, transparent)",
+            }}
+          />
+
+          {/* Quantity + Add to bag */}
+          <div className="flex flex-col sm:flex-row sm:items-center gap-4 pt-1">
+            {/* Quantity picker */}
+            <div className="flex items-center gap-3">
+              <span className="text-[11px] tracking-widest uppercase text-[#b07090]">
+                Qty
+              </span>
+              <div
+                className="flex items-center rounded-full bg-white"
+                style={{ border: "1px solid #E5C6ED" }}
               >
-                <ShoppingBag className="w-5 h-5" />
-                Add to bag
-              </button>
+                <button
+                  type="button"
+                  onClick={() => bumpQty(-1)}
+                  disabled={quantity <= 1}
+                  className="p-3 text-[#a156b4] disabled:opacity-30 transition-opacity"
+                  aria-label="Decrease quantity"
+                >
+                  <Minus className="w-3.5 h-3.5" />
+                </button>
+                <span className="w-9 text-center text-sm font-medium text-[#a156b4]">
+                  {quantity}
+                </span>
+                <button
+                  type="button"
+                  onClick={() => bumpQty(1)}
+                  disabled={quantity >= maxQty || !canAdd}
+                  className="p-3 text-[#a156b4] disabled:opacity-30 transition-opacity"
+                  aria-label="Increase quantity"
+                >
+                  <Plus className="w-3.5 h-3.5" />
+                </button>
+              </div>
             </div>
-          </motion.div>
-        </div>
+
+            {/* Add to bag */}
+            <button
+              type="button"
+              onClick={handleAddToCart}
+              disabled={!canAdd}
+              style={{ fontFamily: "var(--font-heading)" }}
+              className="
+              inline-flex cursor-pointer items-center justify-center gap-2.5
+              flex-1 sm:flex-none min-w-[200px]
+              px-8 py-4 rounded-full
+              bg-[#a156b4] hover:bg-[#8e4a9f]
+              text-white font-medium text-base tracking-wide
+              transition-all duration-200
+              disabled:opacity-40 disabled:cursor-not-allowed
+              active:scale-95
+            "
+            >
+              <ShoppingBag className="w-4.5 h-4.5" />
+              {canAdd ? "Add to bag" : "Out of stock"}
+            </button>
+          </div>
+
+          {/* Trust badges */}
+          <div className="flex flex-wrap gap-4 pt-2">
+            {[
+              "Fast shipping",
+              "Premium quality assurance",
+              "Authentic & sealed",
+            ].map((badge) => (
+              <div key={badge} className="flex items-center gap-1.5">
+                <span className="w-1 h-1 rounded-full bg-[#c4a0b4]" />
+                <span className="text-[11px] tracking-wide text-[#b07090]">
+                  {badge}
+                </span>
+              </div>
+            ))}
+          </div>
+        </motion.div>
       </div>
     </div>
   );

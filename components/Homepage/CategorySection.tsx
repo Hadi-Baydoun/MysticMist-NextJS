@@ -1,11 +1,14 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import Link from "next/link";
 import { motion as Motion } from "framer-motion";
 import { ArrowRight, Sparkles } from "lucide-react";
 
-import type { ShopCategoryTile } from "@/lib/categories-data";
+import {
+  type ShopCategoryTile,
+  shopCategoryHref,
+} from "@/lib/categories-data";
 
 interface SparkleConfig {
   left: number;
@@ -19,18 +22,14 @@ export function CategorySection({
 }: {
   collections: ShopCategoryTile[];
 }) {
-  const [sparkleConfigs, setSparkleConfigs] = useState<SparkleConfig[]>([]);
-
-  useEffect(() => {
-    setSparkleConfigs(
-      Array.from({ length: 50 }).map(() => ({
-        left: Math.random() * 100,
-        top: Math.random() * 100,
-        delay: Math.random() * 5,
-        duration: 3 + Math.random() * 4,
-      })),
-    );
-  }, []);
+  const [sparkleConfigs] = useState<SparkleConfig[]>(() =>
+    Array.from({ length: 50 }).map(() => ({
+      left: Math.random() * 100,
+      top: Math.random() * 100,
+      delay: Math.random() * 5,
+      duration: 3 + Math.random() * 4,
+    })),
+  );
 
   return (
     <section className="py-16 sm:py-24 lg:pt-32 lg:pb-16 px-4 sm:px-6 lg:px-8 relative overflow-hidden bg-gradient-to-b from-[#a156b4]/5 via-[#a156b4]/5 to-[#a156b4]/5">
@@ -108,7 +107,7 @@ export function CategorySection({
           {collections.map((collection) => (
             <Link
               key={collection.id}
-              href={`/shop?category=${encodeURIComponent(String(collection.id))}`}
+              href={shopCategoryHref(collection.id)}
               className="block group"
             >
               <div className="relative w-full max-w-xs mx-auto sm:max-w-none transition-transform duration-300 ease-out group-hover:scale-105">
@@ -162,8 +161,8 @@ export function CategorySection({
             return (
               <Link
                 key={collection.id}
-                href={`/shop?category=${encodeURIComponent(String(collection.id))}`}
-                className="block group absolute bottom-0"
+                href={shopCategoryHref(collection.id)}
+                className="block group absolute bottom-0 w-72 xl:w-80"
                 style={{
                   left: "50%",
                   transform: `translateX(calc(-50% + ${translateX}px))`,
@@ -171,7 +170,7 @@ export function CategorySection({
                 }}
               >
                 <div
-                  className="relative w-72 xl:w-80 transition-transform duration-300 ease-out group-hover:scale-110"
+                  className="relative w-full transition-transform duration-300 ease-out group-hover:scale-110"
                   style={{
                     transformOrigin: "bottom center",
                     transform: `rotate(${rotation}deg)`,

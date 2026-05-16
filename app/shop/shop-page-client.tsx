@@ -9,23 +9,23 @@ import {
   type ReactNode,
 } from "react";
 import { motion, useInView } from "framer-motion";
-import {
-  Sparkles,
-  Filter,
-  ChevronDown,
-  ChevronLeft,
-  ChevronRight,
-  X,
-  Search,
-} from "lucide-react";
+import { Sparkles, Filter, ChevronDown, ChevronLeft, ChevronRight, X } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 
-import type { ShopCategoryTile } from "@/lib/categories-data";
+import {
+  LuxuryShopFilterSidebar,
+  type ShopFilterCategoryRow,
+} from "@/components/Shop/LuxuryShopFilterSidebar";
+import {
+  type ShopCategoryTile,
+  resolveShopCategoryParam,
+  shopCategoryFilterIconHint,
+  sortShopCategoryTiles,
+} from "@/lib/categories-data";
 import type { ShopCatalogProduct } from "@/lib/products-data";
 
 type Filters = {
-  category: string;
   priceRange: { min: string; max: string };
   sortBy: string;
   searchQuery: string;
@@ -34,14 +34,6 @@ type Filters = {
 };
 
 const PAGE_SIZE = 6;
-
-function resolvedShopCategory(
-  raw: string | null,
-  list: ShopCategoryTile[],
-): string {
-  if (raw == null || raw === "") return "all";
-  return list.some((c) => String(c.id) === String(raw)) ? raw : "all";
-}
 
 function sortProducts(
   list: ShopCatalogProduct[],
@@ -104,7 +96,6 @@ function ShopContent({
   const [showFilters, setShowFilters] = useState<boolean>(false);
 
   const [filters, setFilters] = useState<Filters>({
-    category: resolvedShopCategory(searchParams.get("category"), categories),
     priceRange: { min: "", max: "" },
     sortBy: "createdAt:desc",
     searchQuery: "",
@@ -112,43 +103,65 @@ function ShopContent({
     page: 1,
   });
 
-  useEffect(() => {
-    const categoryParam = resolvedShopCategory(
-      searchParams.get("category"),
-      categories,
-    );
-
-    setFilters((prev) => ({
-      ...prev,
-      category: categoryParam,
-      page: 1,
-    }));
-  }, [searchParams, categories]);
-
-  const categoryOptions = useMemo(
+  const categoryFromUrl = useMemo(
     () =>
-      [...categories].sort((a, b) =>
-        a.name.localeCompare(b.name, undefined, { sensitivity: "base" }),
-      ),
-    [categories],
+      resolveShopCategoryParam(searchParams.get("category"), categories),
+    [searchParams, categories],
   );
 
+  const shopCategoryRows = useMemo((): ShopFilterCategoryRow[] => {
+    const sorted = sortShopCategoryTiles(categories);
+    return [
+      {
+        id: "all",
+        label: "All products",
+        count: allProducts.length,
+        iconHint: "grid",
+      },
+      ...sorted.map((t) => ({
+        id: String(t.id),
+        label: t.name,
+        count: allProducts.filter(
+          (p) => String(p.categoryId ?? "") === String(t.id),
+        ).length,
+        iconHint: shopCategoryFilterIconHint(t.name),
+      })),
+    ];
+  }, [allProducts, categories]);
+
   const updateCategoryQuery = (value: string) => {
-    const category =
-      value === "all" ? "all" : resolvedShopCategory(value, categories);
+    const next =
+      value === "all"
+        ? "all"
+        : resolveShopCategoryParam(value, categories);
 
     setFilters((prev) => ({
       ...prev,
-      category,
       page: 1,
     }));
 
     const params = new URLSearchParams(searchParams.toString());
-    if (category === "all") {
+    if (next === "all") {
       params.delete("category");
     } else {
-      params.set("category", category);
+      params.set("category", next);
     }
+    const qs = params.toString();
+    router.replace(qs ? `${pathname}?${qs}` : pathname, { scroll: false });
+  };
+
+  const handleClearFilters = () => {
+    setFilters((prev) => ({
+      ...prev,
+      searchQuery: "",
+      sortBy: "createdAt:desc",
+      onSale: false,
+      page: 1,
+      priceRange: { min: "", max: "" },
+    }));
+
+    const params = new URLSearchParams(searchParams.toString());
+    params.delete("category");
     const qs = params.toString();
     router.replace(qs ? `${pathname}?${qs}` : pathname, { scroll: false });
   };
@@ -156,9 +169,9 @@ function ShopContent({
   const filteredProducts = useMemo(() => {
     let list = allProducts;
 
-    if (filters.category !== "all") {
+    if (categoryFromUrl !== "all") {
       list = list.filter(
-        (p) => String(p.categoryId ?? "") === String(filters.category),
+        (p) => String(p.categoryId ?? "") === String(categoryFromUrl),
       );
     }
 
@@ -187,7 +200,7 @@ function ShopContent({
     return sortProducts(list, filters.sortBy);
   }, [
     allProducts,
-    filters.category,
+    categoryFromUrl,
     filters.searchQuery,
     filters.onSale,
     filters.priceRange.min,
@@ -205,14 +218,8 @@ function ShopContent({
   );
 
   useEffect(() => {
-    if (filters.page > pageCount) {
-      setFilters((prev) => ({ ...prev, page: pageCount }));
-    }
-  }, [pageCount, filters.page]);
-
-  useEffect(() => {
     window.scrollTo({ top: 0, behavior: "smooth" });
-  }, [filters.page]);
+  }, [safePage]);
 
   const handlePageChange = (newPage: number) => {
     if (newPage >= 1 && newPage <= pageCount) {
@@ -274,98 +281,37 @@ function ShopContent({
               showFilters ? "block" : "hidden lg:block"
             }`}
           >
-            <div className="bg-white p-6 rounded-3xl border border-[#E5C6ED]/50 shadow-sm sticky top-24">
-              <div className="mb-8">
-                <h3 className="text-xl text-[#a156b4] mb-4">Search</h3>
-
-                <div className="relative">
-                  <input
-                    type="text"
-                    value={filters.searchQuery}
-                    onChange={(e) =>
-                      setFilters((prev) => ({
-                        ...prev,
-                        searchQuery: e.target.value,
-                        page: 1,
-                      }))
-                    }
-                    placeholder="Search products..."
-                    className="w-full pl-10 pr-4 py-2 rounded-lg border border-[#E5C6ED]"
-                  />
-                  <Search className="absolute left-3 top-2.5 w-4 h-4 text-gray-400" />
-                </div>
-              </div>
-
-              <div className="mb-8">
-                <h3 className="text-xl text-[#a156b4] mb-4">Category</h3>
-                <select
-                  value={filters.category}
-                  onChange={(e) => updateCategoryQuery(e.target.value)}
-                  className="w-full py-2 px-3 rounded-lg border border-[#E5C6ED] bg-white text-gray-800 focus:outline-none focus:ring-2 focus:ring-[#a156b4]/30"
-                >
-                  <option value="all">All categories</option>
-                  {categoryOptions.map((c) => (
-                    <option key={String(c.id)} value={String(c.id)}>
-                      {c.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div className="mb-8">
-                <h3 className="text-xl text-[#a156b4] mb-4">Sort by</h3>
-                <select
-                  value={filters.sortBy}
-                  onChange={(e) =>
-                    setFilters((prev) => ({
-                      ...prev,
-                      sortBy: e.target.value,
-                      page: 1,
-                    }))
-                  }
-                  className="w-full py-2 px-3 rounded-lg border border-[#E5C6ED] bg-white text-gray-800 focus:outline-none focus:ring-2 focus:ring-[#a156b4]/30"
-                >
-                  <option value="createdAt:desc">Newest first</option>
-                  <option value="price:asc">Price: low to high</option>
-                  <option value="price:desc">Price: high to low</option>
-                </select>
-              </div>
-
-              <div className="mb-8">
-                <h3 className="text-xl text-[#a156b4] mb-4">Offers</h3>
-                <button
-                  type="button"
-                  role="switch"
-                  aria-checked={filters.onSale}
-                  onClick={() =>
-                    setFilters((prev) => ({
-                      ...prev,
-                      onSale: !prev.onSale,
-                      page: 1,
-                    }))
-                  }
-                  className={`w-full flex items-center justify-between gap-3 px-4 py-3 rounded-xl border transition-colors ${
-                    filters.onSale
-                      ? "border-[#a156b4] bg-[#a156b4]/10 text-[#a156b4]"
-                      : "border-[#E5C6ED] bg-white text-gray-700 hover:border-[#E5C6ED]"
-                  }`}
-                >
-                  <span className="text-sm font-medium text-left">
-                    On sale only
-                  </span>
-                  <span
-                    className={`shrink-0 h-6 w-11 rounded-full relative transition-colors ${
-                      filters.onSale ? "bg-[#a156b4]" : "bg-gray-300"
-                    }`}
-                  >
-                    <span
-                      className={`absolute top-0.5 left-0.5 h-5 w-5 rounded-full bg-white shadow transition-transform ${
-                        filters.onSale ? "translate-x-5" : ""
-                      }`}
-                    />
-                  </span>
-                </button>
-              </div>
+            <div className="sticky top-24">
+              <LuxuryShopFilterSidebar
+                categoryRows={shopCategoryRows}
+                categoryId={categoryFromUrl}
+                onCategoryChange={updateCategoryQuery}
+                sortBy={filters.sortBy}
+                onSortByChange={(value) =>
+                  setFilters((prev) => ({
+                    ...prev,
+                    sortBy: value,
+                    page: 1,
+                  }))
+                }
+                searchQuery={filters.searchQuery}
+                onSearchChange={(value) =>
+                  setFilters((prev) => ({
+                    ...prev,
+                    searchQuery: value,
+                    page: 1,
+                  }))
+                }
+                onSale={filters.onSale}
+                onSaleToggle={() =>
+                  setFilters((prev) => ({
+                    ...prev,
+                    onSale: !prev.onSale,
+                    page: 1,
+                  }))
+                }
+                onClearAll={handleClearFilters}
+              />
             </div>
           </aside>
 

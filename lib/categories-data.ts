@@ -16,6 +16,55 @@ export type ShopCategoryTile = {
   image: string | null;
 };
 
+/** Visual hint used by `/shop` filter UI — maps names to lucide-/Tabler-style icons. */
+export type ShopCategoryFilterIconHint =
+  | "grid"
+  | "wind"
+  | "droplet"
+  | "flask"
+  | "gift";
+
+/** A→Z sort for consistent shop category filter rows. */
+export function sortShopCategoryTiles(
+  tiles: ShopCategoryTile[],
+): ShopCategoryTile[] {
+  return [...tiles].sort((a, b) =>
+    a.name.localeCompare(b.name, undefined, { sensitivity: "base" }),
+  );
+}
+
+/**
+ * Normalize `?category=` to a known tile id, or `"all"`.
+ * Treats empty and literal `"all"` as no filter.
+ */
+export function resolveShopCategoryParam(
+  raw: string | null,
+  tiles: ShopCategoryTile[],
+): "all" | string {
+  if (raw == null || raw === "" || raw === "all") return "all";
+  const idStr = String(raw);
+  return tiles.some((c) => String(c.id) === idStr) ? idStr : "all";
+}
+
+/** `/shop?category=…` URL for a tile id (must match `resolveShopCategoryParam`). */
+export function shopCategoryHref(categoryId: string | number): string {
+  const qs = new URLSearchParams({ category: String(categoryId) }).toString();
+  return `/shop?${qs}`;
+}
+
+/** Heuristic icon category for luxury-style filter rows (name-based). */
+export function shopCategoryFilterIconHint(
+  categoryName: string,
+): ShopCategoryFilterIconHint {
+  const n = categoryName.toLowerCase().trim();
+  if (/\bmists?\b/.test(n) || n.includes("mist")) return "wind";
+  if (n.includes("lotion")) return "droplet";
+  if (/\boils?\b/.test(n) || /\boil\b/.test(n)) return "flask";
+  if (n.includes("gift") || /^sets?$/.test(n) || /\bsets?\b/.test(n))
+    return "gift";
+  return "grid";
+}
+
 export type FetchCategoriesResult =
   | { ok: true; categories: ShopCategoryTile[] }
   | { ok: false; error: string };
